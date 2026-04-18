@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "948904727465",
+    "project_id": "mening-hamshiram-off",
+    "storage_bucket": "mening-hamshiram-off.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948904727465:android:0c2be26c4fb26b0dafaab8",
+        "android_client_info": {
+          "package_name": "com.mening.hamshiram.mening_hamshiram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXBA99PQgIU6Bd01inbhUyjOuNIADhof4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

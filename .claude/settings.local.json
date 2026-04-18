@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter clean:*)",
+      "Bash(find ~/.pub-cache/hosted/pub.dev/yandex_maps_mapkit_lite-4.33.1-beta/android -name *.gradle* -o -name *.json -o -name CMakeLists.txt)",
+      "Bash(xargs cat:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:pub.dev)",
+      "WebFetch(domain:yandex.ru)",
+      "WebFetch(domain:yandex.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -s \"https://api.github.com/repos/yandex/yandex_maps_mapkit_lite/contents/android\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/yandex/yandex_maps_mapkit_lite/master/android/build.gradle\")",
+      "Bash(curl -s \"https://api.github.com/repos/yandex/yandex_maps_mapkit_lite/releases\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/yandex/yandex_maps_mapkit_lite/master/pubspec.yaml\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/yandex/yandex_maps_mapkit_lite/master/README.md\")",
+      "Bash(curl -s \"https://api.github.com/repos/yandex/yandex_maps_mapkit_lite/contents/\")",
+      "Bash(find ~/.pub-cache/hosted/pub.dev/yandex_maps_mapkit_lite-4.33.1-beta -name *.sh -o -name *.py -o -name *.so -o -name *.aar)",
+      "Bash(find ~/.pub-cache/hosted/pub.dev/yandex_mapkit-4.2.1/android -name *.gradle*)",
+      "Bash(flutter pub:*)",
+      "Bash(/Users/abdullahibrokhimov/flutter/bin/flutter analyze:*)",
+      "Read(//Users/abdullahibrokhimov/development/flutter/bin/**)",
+      "Read(//usr/local/**)",
+      "Bash(/Users/abdullahibrokhimov/development/flutter/bin/flutter analyze:*)",
+      "Bash(/Users/abdullahibrokhimov/development/flutter/bin/flutter pub:*)"
+    ]
+  }
+}

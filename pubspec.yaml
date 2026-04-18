@@ -1,0 +1,42 @@
+name: mening_hamshiram
+description: "A new Flutter project for najmiddin. mening hamshiram."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.1+2
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  get: ^4.6.6
+  get_storage: ^2.1.1
+  flutter_screenutil: ^5.9.0
+  smooth_page_indicator: ^1.1.0
+  pinput: ^3.0.1
+  shimmer: ^3.0.0
+  firebase_core: ^3.3.0
+  firebase_auth: ^5.1.4
+  cloud_firestore: ^5.2.1
+  firebase_messaging: ^15.2.10
+  yandex_mapkit: ^4.2.1
+  geolocator: ^12.0.0
+  flutter_local_notifications: ^17.2.2
+  intl: ^0.19.0
+  url_launcher: ^6.3.0
+  permission_handler: ^11.3.1
+  connectivity_plus: ^6.0.3
+  uuid: ^4.4.2
+  http: ^1.6.0
+  crypto: ^3.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
