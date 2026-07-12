@@ -12,19 +12,20 @@ import '../../order/controllers/order_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 
 // ══════════════════════════════════════
-// MAIN SCREEN
+// DASHBOARD SCREEN
 // ══════════════════════════════════════
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _DashboardScreenState extends State<DashboardScreen> {
   int _idx = 0;
-  static const _tabs = [HomeTab(), OrdersTab(), ProfileTab()];
+  static const _tabs = [DashboardTab(), OrdersTab(), ProfileTab()];
+  bool _locationRequesting = false;
 
   @override
   void initState() {
@@ -55,6 +56,9 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Checks permission, shows a dialog (not snackbar) that stays until user acts.
   Future<void> _requestLocationPermission() async {
+    if (_locationRequesting) return;
+    _locationRequesting = true;
+    try {
     await Future.delayed(const Duration(milliseconds: 600));
     if (!mounted) return;
 
@@ -107,6 +111,9 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
     // If granted — nothing to show, all good
+    } finally {
+      _locationRequesting = false;
+    }
   }
 
   void _showLocationDialog({
@@ -189,9 +196,9 @@ class _MainScreenState extends State<MainScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _NavBtn(
-                  Icons.home_rounded,
-                  Icons.home_outlined,
-                  'main'.tr,
+                  Icons.dashboard_rounded,
+                  Icons.dashboard_outlined,
+                  'dashboard'.tr,
                   0,
                   _idx,
                   () => setState(() => _idx = 0),
@@ -282,8 +289,8 @@ class _NavBtn extends StatelessWidget {
 // HOME TAB
 // ══════════════════════════════════════
 
-class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
+class DashboardTab extends StatelessWidget {
+  const DashboardTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -317,85 +324,92 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _header(String name, OrderController ctrl) => Container(
-    padding: EdgeInsets.fromLTRB(20.w, 52.h, 20.w, 24.h),
-    decoration: BoxDecoration(
-      gradient: AppColors.headerGradient,
-      borderRadius: BorderRadius.vertical(bottom: Radius.circular(26.r)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 48.w,
-          height: 48.w,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.22),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              name[0].toUpperCase(),
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                fontFamily: 'Nunito',
-              ),
-            ),
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _header(String name, OrderController ctrl) => ClipRRect(
+    borderRadius: BorderRadius.vertical(bottom: Radius.circular(26.r)),
+    child: Container(
+      padding: EdgeInsets.fromLTRB(20.w, 52.h, 20.w, 24.h),
+      decoration: const BoxDecoration(gradient: AppColors.headerGradient),
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          // Doctor background image — right side, subtle opacity
+          // Header content row
+          Row(
             children: [
-              Text(
-                '${'hello'.tr}, $name 👋',
-                style: TextStyle(
-                  fontSize: 17.sp,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  fontFamily: 'Nunito',
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.22),
+                  shape: BoxShape.circle,
                 ),
-              ),
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    color: Colors.white.withOpacity(0.7),
-                    size: 12.sp,
-                  ),
-                  SizedBox(width: 2.w),
-                  Obx(() => Text(
-                    ctrl.addressText.value,
+                child: Center(
+                  child: Text(
+                    name[0].toUpperCase(),
                     style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
                       fontFamily: 'Nunito',
                     ),
-                  )),
-                ],
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${'hello'.tr}, $name 👋',
+                      style: TextStyle(
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        fontFamily: 'Nunito',
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_rounded,
+                          color: Colors.white.withOpacity(0.7),
+                          size: 12.sp,
+                        ),
+                        SizedBox(width: 2.w),
+                        Text(
+                          'Andijon viloyati',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.white.withOpacity(0.7),
+                            fontFamily: 'Nunito',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Get.toNamed(AppRoutes.notifications),
+                child: Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.white,
+                    size: 20.sp,
+                  ),
+                ),
               ),
             ],
           ),
-        ),
-        GestureDetector(
-          onTap: () => Get.toNamed(AppRoutes.notifications),
-          child: Container(
-            width: 40.w,
-            height: 40.w,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              Icons.notifications_outlined,
-              color: Colors.white,
-              size: 20.sp,
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 
@@ -405,7 +419,7 @@ class HomeTab extends StatelessWidget {
       GestureDetector(
         onTap: () => Get.toNamed(AppRoutes.order),
         child: Container(
-          height: 140.h,
+          constraints: BoxConstraints(minHeight: 130.h),
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
             borderRadius: BorderRadius.circular(20.r),
@@ -474,6 +488,53 @@ class HomeTab extends StatelessWidget {
                   ],
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+      SizedBox(height: 10.h),
+      // Phone order button
+      GestureDetector(
+        onTap: () async {
+          final uri = Uri(scheme: 'tel', path: '+998886686868');
+          if (await canLaunchUrl(uri)) launchUrl(uri);
+        },
+        child: Container(
+          height: 54.h,
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: AppColors.primary.withOpacity(0.25), width: 1.5),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3)),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 34.w, height: 34.w,
+                decoration: BoxDecoration(color: AppColors.primaryLight, shape: BoxShape.circle),
+                child: Icon(Icons.call_rounded, color: AppColors.primary, size: 17.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'phone_order_title'.tr,
+                      style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Nunito'),
+                    ),
+                    Text(
+                      '+998 88 668 68 68',
+                      style: TextStyle(fontSize: 11.sp, color: AppColors.primary, fontFamily: 'Nunito', fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textLight, size: 12.sp),
             ],
           ),
         ),
@@ -1228,14 +1289,14 @@ class ProfileTab extends StatelessWidget {
                                           child: ElevatedButton.icon(
                                             onPressed: () async {
                                               final Uri phoneUri =
-                                              Uri(scheme: 'tel', path: '+998777775452');
+                                              Uri(scheme: 'tel', path: '+998886686868');
                                               if (await canLaunchUrl(phoneUri)) {
                                                 await launchUrl(phoneUri);
                                               }
                                             },
                                             icon: const Icon(Icons.call, size: 20),
                                             label: const Text(
-                                              "+998 77 777 54 52",
+                                              "+998 88 668 68 68",
                                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                             ),
                                             style: ElevatedButton.styleFrom(
@@ -1371,6 +1432,116 @@ class ProfileTab extends StatelessWidget {
                             Icon(
                               Icons.arrow_forward_ios_rounded,
                               color: AppColors.accent.withOpacity(0.5),
+                              size: 12.sp,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 12.h),
+
+                    // ── DELETE ACCOUNT (Apple Guideline 5.1.1(v)) ─────────
+                    GestureDetector(
+                      onTap: () => Get.dialog(
+                        AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.r),
+                          ),
+                          title: Text(
+                            'delete_account_title'.tr,
+                            style: const TextStyle(
+                              fontFamily: 'Nunito',
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFB91C1C),
+                            ),
+                          ),
+                          content: Text(
+                            'delete_account_warning'.tr,
+                            style: const TextStyle(
+                              fontFamily: 'Nunito',
+                              height: 1.5,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Get.back(),
+                              child: Text(
+                                'cancel'.tr,
+                                style: const TextStyle(
+                                  color: AppColors.textLight,
+                                  fontFamily: 'Nunito',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Get.back();
+                                AuthController controller = Get.put(AuthController());
+                                controller.deleteAccount();
+                              },
+                              child: const Text(
+                                'Ha',
+                                style: TextStyle(
+                                  color: Color(0xFFB91C1C),
+                                  fontFamily: 'Nunito',
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 13.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(
+                            color: const Color(0xFFB91C1C).withOpacity(0.2),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 34.w,
+                              height: 34.w,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEE2E2),
+                                borderRadius: BorderRadius.circular(9.r),
+                              ),
+                              child: Icon(
+                                Icons.delete_forever_rounded,
+                                color: const Color(0xFFB91C1C),
+                                size: 17.sp,
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Text(
+                              'delete_account'.tr,
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFFB91C1C),
+                                fontFamily: 'Nunito',
+                              ),
+                            ),
+                            const Spacer(),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: const Color(0xFFB91C1C).withOpacity(0.5),
                               size: 12.sp,
                             ),
                           ],

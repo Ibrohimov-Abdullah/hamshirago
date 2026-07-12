@@ -4,7 +4,7 @@ import '../../features/splash/views/splash_screen.dart';
 import '../../features/onboarding/views/language_screen.dart';
 import '../../features/onboarding/views/onboarding_screen.dart';
 import '../../features/auth/views/auth_screens.dart';
-import '../../features/home/views/main_screen.dart';
+import '../../features/dashboard/views/dashboard_screen.dart';
 import '../../features/order/views/order_screen.dart';
 import '../../features/order/views/select_service_screen.dart';
 import '../../features/order/views/patient_info_screen.dart';
@@ -38,7 +38,7 @@ class AppRoutes {
     GetPage(name: login,         page: () => const LoginScreen()),
     GetPage(name: register,      page: () => const RegisterScreen()),
     GetPage(name: otp,           page: () => const OtpScreen()),
-    GetPage(name: main,          page: () => const MainScreen()),
+    GetPage(name: main,          page: () => const DashboardScreen()),
     GetPage(name: order,         page: () => const OrderScreen()),
     GetPage(name: selectService, page: () => const SelectServiceScreen()),
     GetPage(name: patientInfo,   page: () => const PatientInfoScreen()),

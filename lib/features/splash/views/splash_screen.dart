@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 SizedBox(height: 20.h),
                 Text('Mening Hamshiram', style: TextStyle(fontSize: 34.sp, fontWeight: FontWeight.w900, color: Colors.white, fontFamily: 'Nunito')),
                 SizedBox(height: 6.h),
-                Text('Tibbiy xizmatlar platformasi', style: TextStyle(fontSize: 13.sp, color: Colors.white.withOpacity(0.75), fontFamily: 'Nunito')),
+                Text('app_tagline'.tr, style: TextStyle(fontSize: 13.sp, color: Colors.white.withOpacity(0.75), fontFamily: 'Nunito')),
               ])),
             ),
           ),

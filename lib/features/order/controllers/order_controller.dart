@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:mening_hamshiram/features/home/views/main_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:mening_hamshiram/features/dashboard/views/dashboard_screen.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/models/models.dart';
@@ -79,30 +80,9 @@ class OrderController extends GetxController {
   Future<void> _loadLocation() async {
     try {
       clientPosition = await _loc.getCurrentPosition();
-      if (clientPosition != null) {
-        // Use actual coordinates for display
-        final lat = clientPosition!.latitude;
-        final lng = clientPosition!.longitude;
-        // Simple region detection based on Uzbekistan coordinates
-        if (lat >= 41.0 && lat <= 41.6 && lng >= 68.8 && lng <= 69.8) {
-          addressText.value = 'Toshkent shahri';
-        } else if (lat >= 39.5 && lat <= 40.2 && lng >= 66.7 && lng <= 67.5) {
-          addressText.value = 'Samarqand shahri';
-        } else if (lat >= 39.7 && lat <= 40.2 && lng >= 64.2 && lng <= 65.0) {
-          addressText.value = 'Buxoro shahri';
-        } else if (lat >= 40.3 && lat <= 41.0 && lng >= 71.5 && lng <= 72.5) {
-          addressText.value = 'Farg\'ona shahri';
-        } else if (lat >= 40.0 && lat <= 41.0 && lng >= 65.0 && lng <= 66.0) {
-          addressText.value = 'Navoiy shahri';
-        } else {
-          addressText.value = 'Joylashuv aniqlandi';
-        }
-      } else {
-        addressText.value = 'Joylashuv topilmadi';
-      }
-    } catch (e) {
-      addressText.value = 'Joylashuv xatosi';
-    }
+    } catch (_) {}
+    // Always show Andijon viloyati in the header location text
+    addressText.value = 'Andijon viloyati';
   }
 
   void _listenOrders() {
@@ -130,13 +110,16 @@ class OrderController extends GetxController {
     });
   }
 
-  int get totalPrice => selections.fold(0, (s, x) => s + x.subtotal);
+  static const int transportFee = 15000;
+  int get servicesPrice => selections.fold(0, (s, x) => s + x.subtotal);
+  int get totalPrice    => servicesPrice + transportFee;
   List<ServiceSelection> get selectedServices => selections.where((s) => s.hasValue).toList();
 
   void setPickedLocation(double lat, double lng) {
     pickedLat = lat;
     pickedLng = lng;
-    addressText.value = 'Tanlangan manzil (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})';
+    // addressText stays as "Andijon viloyati" for the home header;
+    // order_screen manages its own local address display string.
   }
 
   void toggleService(int i, bool val) => selections[i].isSelected.value = val;
@@ -149,7 +132,7 @@ class OrderController extends GetxController {
     final phone = _box.read('user_phone') as String? ?? '';
     if (selectedServices.isEmpty) return;
     if (buildingCtrl.text.trim().isEmpty) {
-      Get.snackbar('Xato', 'Uy raqamini kiriting',
+      Get.snackbar('err_title'.tr, 'err_enter_house'.tr,
         backgroundColor: const Color(0xFFEF4444).withOpacity(0.9),
         colorText: const Color(0xFFFFFFFF), snackPosition: SnackPosition.TOP, margin: const EdgeInsets.all(16));
       return;
@@ -173,7 +156,10 @@ class OrderController extends GetxController {
       final finalPrice = promoApplied ? discountedPrice : totalPrice;
       final order = OrderModel(
         id: '', clientId: uid, clientName: name, clientPhone: phone,
-        services: svcs, totalPrice: finalPrice, status: OrderStatus.pending,
+        services: svcs, totalPrice: finalPrice,
+        // All orders start as 'pending' — admin reviews and assigns a nurse.
+        // Click orders also stay pending until payment is confirmed.
+        status: OrderStatus.pending,
         paymentMethod: paymentMethod.value, address: address,
         patientAge: patientAge.value, patientGender: patientGender.value,
         isNow: isNow.value, scheduledAt: scheduledAt,
@@ -189,7 +175,11 @@ class OrderController extends GetxController {
       for (final s in selections) { s.isSelected.value = false; s.count.value = 0; }
       buildingCtrl.clear(); entranceCtrl.clear(); apartmentCtrl.clear(); commentCtrl.clear();
       multiDayDates.clear(); multiDayTime = null; multiDayTimes.clear(); timesPerDay = 1; scheduledAt = null; isNow.value = true;
+      // Navigate to tracking screen first, then open Click if that method was chosen
       Get.offAllNamed(AppRoutes.orderTracking, arguments: {'orderId': orderId});
+      if (paymentMethod.value == PaymentMethod.click) {
+        await launchClickPayment(orderId, finalPrice);
+      }
     } finally { placing.value = false; }
   }
 
@@ -198,10 +188,38 @@ class OrderController extends GetxController {
     _box.remove('active_order_id');
     activeOrderId.value = '';
     activeOrder.value   = null;
-    Get.offAll(const MainScreen());
+    Get.offAll(const DashboardScreen());
   }
 
   Future<void> rateOrder(String id, double rating) => _fb.rateOrder(id, rating);
 
-
+  // ── Click payment ─────────────────────────────────────────────────────────
+  // Opens Click payment page in browser / Click Up app.
+  // Click will POST to our Firebase Functions (prepare + complete) and
+  // update isPaid=true in Firestore when the user successfully pays.
+  Future<void> launchClickPayment(String orderId, int amount) async {
+    const serviceId  = '101190';
+    const merchantId = '59988';
+    final url = Uri.parse(
+      'https://my.click.uz/services/pay'
+      '?service_id=$serviceId'
+      '&merchant_id=$merchantId'
+      '&amount=$amount'
+      '&transaction_param=$orderId',
+    );
+    try {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('[Click] failed to launch URL: $e');
+      Get.snackbar(
+        'err_title'.tr,
+        'err_click_open'.tr,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    }
+  }
 }

@@ -2,7 +2,7 @@ name: mening_hamshiram
 description: "A new Flutter project for najmiddin. mening hamshiram."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.1+2
+version: 2.0.1+7
 
 environment:
   sdk: ^3.11.0
@@ -20,8 +20,9 @@ dependencies:
   firebase_auth: ^5.1.4
   cloud_firestore: ^5.2.1
   firebase_messaging: ^15.2.10
-  yandex_mapkit: ^4.2.1
-  geolocator: ^12.0.0
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.0
+  geolocator: ^11.0.0
   flutter_local_notifications: ^17.2.2
   intl: ^0.19.0
   url_launcher: ^6.3.0
@@ -30,12 +31,18 @@ dependencies:
   uuid: ^4.4.2
   http: ^1.6.0
   crypto: ^3.0.7
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
 
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/Logo.png"
 flutter:
   uses-material-design: true
   assets:

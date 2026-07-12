@@ -122,10 +122,21 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
   // ── Hero header ───────────────────────────────────────────────────────────
 
   Widget _buildHero(OrderModel? order) {
-    final isSearching = order == null ||
-        order.status == OrderStatus.searching ||
+    // Click order that hasn't been paid yet → special "awaiting payment" state
+    final isAwaitingPayment = order != null &&
+        order.paymentMethod == PaymentMethod.click &&
+        !order.isPaid &&
         order.status == OrderStatus.pending;
-    final color = _statusColor(order?.status);
+
+    final isSearching = !isAwaitingPayment &&
+        (order == null ||
+            order.status == OrderStatus.searching ||
+            order.status == OrderStatus.pending);
+
+    // Awaiting-payment hero is blue-ish; everything else follows status colour
+    final color = isAwaitingPayment
+        ? const Color(0xFF0066CC)
+        : _statusColor(order?.status);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 400),
@@ -190,7 +201,17 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
               SizedBox(height: 18.h),
 
               // Animated icon
-              if (isSearching)
+              if (isAwaitingPayment)
+                Container(
+                  width: 76.w, height: 76.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.22),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+                  ),
+                  child: const Center(child: Text('💳', style: TextStyle(fontSize: 34))),
+                )
+              else if (isSearching)
                 _SearchingRings(color: Colors.white)
               else
                 ScaleTransition(
@@ -202,14 +223,18 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
                     ),
-                    child: Icon(_statusIcon(order!.status), color: Colors.white, size: 36.sp),
+                    child: Icon(_statusIcon(order.status), color: Colors.white, size: 36.sp),
                   ),
                 ),
 
               SizedBox(height: 14.h),
 
               Text(
-                isSearching ? 'searching_nurse'.tr : order!.statusLabel,
+                isAwaitingPayment
+                    ? (Get.locale?.languageCode == 'ru' ? 'Ожидание оплаты' : 'To\'lov kutilmoqda')
+                    : isSearching
+                        ? 'searching_nurse'.tr
+                        : order.statusLabel,
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w900,
@@ -218,7 +243,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
                 ),
               ),
 
-              if (!isSearching && order!.nurseName != null && order.nurseName!.isNotEmpty)
+              if (!isSearching && !isAwaitingPayment &&
+                  order.nurseName != null && order.nurseName!.isNotEmpty)
                 Padding(
                   padding: EdgeInsets.only(top: 4.h),
                   child: Text(
@@ -232,7 +258,20 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
                   ),
                 ),
 
-              if (isSearching) ...[
+              if (isAwaitingPayment) ...[
+                SizedBox(height: 6.h),
+                Text(
+                  Get.locale?.languageCode == 'ru'
+                      ? 'Оплатите через Click — после этого начнётся поиск медсестры'
+                      : 'Click orqali to\'lang — to\'lovdan keyin hamshira qidiriladi',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.white.withOpacity(0.82),
+                    fontFamily: 'Nunito',
+                  ),
+                ),
+              ] else if (isSearching) ...[
                 SizedBox(height: 6.h),
                 Text(
                   'searching_desc'.tr,
@@ -261,6 +300,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
           if (order == null) ...[
             _cancelCard(),
           ] else ...[
+            // ── Click payment banner ─────────────────────────────────────────
+            if (order.paymentMethod == PaymentMethod.click)
+              _clickPaymentCard(order),
+
             // Nurse info card (when nurse is assigned)
             if (order.nurseId != null && order.nurseId!.isNotEmpty)
               _nurseCard(order),
@@ -290,6 +333,155 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
   }
 
   // ── Sub-widgets ───────────────────────────────────────────────────────────
+
+  // ── Click payment card ────────────────────────────────────────────────────
+
+  Widget _clickPaymentCard(OrderModel order) {
+    final isPaid = order.isPaid;
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: isPaid ? const Color(0xFFE6FAF0) : const Color(0xFFE8F1FF),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(
+          color: isPaid
+              ? const Color(0xFF22C55E).withOpacity(0.35)
+              : const Color(0xFF0066CC).withOpacity(0.3),
+        ),
+      ),
+      child: isPaid
+          // ── Paid ────────────────────────────────────────────────────────
+          ? Row(
+              children: [
+                Container(
+                  width: 46.w, height: 46.w,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFBBF7D0),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.check_circle_rounded,
+                      color: const Color(0xFF16A34A), size: 26.sp),
+                ),
+                SizedBox(width: 14.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        Get.locale?.languageCode == 'ru'
+                            ? 'Оплата подтверждена ✅'
+                            : 'To\'lov tasdiqlandi ✅',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF16A34A),
+                          fontFamily: 'Nunito',
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        'Click',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: const Color(0xFF15803D),
+                          fontFamily: 'Nunito',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          // ── Not paid ────────────────────────────────────────────────────
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36.w, height: 36.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0066CC).withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(child: Text('💳', style: TextStyle(fontSize: 18))),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            Get.locale?.languageCode == 'ru'
+                                ? 'Ожидает оплаты'
+                                : 'To\'lov kutilmoqda',
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF0066CC),
+                              fontFamily: 'Nunito',
+                            ),
+                          ),
+                          Text(
+                            '${_fmt(order.totalPrice)} so\'m · Click',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: const Color(0xFF0066CC).withOpacity(0.7),
+                              fontFamily: 'Nunito',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                GestureDetector(
+                  onTap: () => ctrl.launchClickPayment(order.id, order.totalPrice),
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0066CC),
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0066CC).withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        Get.locale?.languageCode == 'ru'
+                            ? 'Оплатить через Click'
+                            : 'Click orqali to\'lash',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          fontFamily: 'Nunito',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  String _fmt(int v) {
+    final s = v.toString();
+    final b = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) b.write(' ');
+      b.write(s[i]);
+    }
+    return b.toString();
+  }
 
   Widget _cancelCard() => Container(
     padding: EdgeInsets.all(18.w),

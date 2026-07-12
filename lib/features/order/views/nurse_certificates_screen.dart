@@ -48,14 +48,14 @@ class _NurseCertificatesScreenState extends State<NurseCertificatesScreen> {
             child: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 17.sp),
           ),
         ),
-        title: Text('Hamshira ma\'lumotlari', style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700, color: Colors.white, fontSize: 16.sp)),
+        title: Text('nurse_info_title'.tr, style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700, color: Colors.white, fontSize: 16.sp)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text('Xatolik yuz berdi', style: TextStyle(fontFamily: 'Nunito', fontSize: 15.sp, color: AppColors.textLight)))
+              ? Center(child: Text('error_occurred'.tr, style: TextStyle(fontFamily: 'Nunito', fontSize: 15.sp, color: AppColors.textLight)))
               : _nurse == null
-                  ? Center(child: Text('Ma\'lumot topilmadi', style: TextStyle(fontFamily: 'Nunito', fontSize: 15.sp, color: AppColors.textLight)))
+                  ? Center(child: Text('info_not_found'.tr, style: TextStyle(fontFamily: 'Nunito', fontSize: 15.sp, color: AppColors.textLight)))
                   : SingleChildScrollView(
                       padding: EdgeInsets.all(20.w),
                       child: Column(
@@ -90,7 +90,7 @@ class _NurseCertificatesScreenState extends State<NurseCertificatesScreen> {
                                           SizedBox(width: 4.w),
                                           Text(_nurse!.rating.toStringAsFixed(1), style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textMedium, fontFamily: 'Nunito')),
                                           SizedBox(width: 8.w),
-                                          Text('(${_nurse!.totalOrders} buyurtma)', style: TextStyle(fontSize: 12.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
+                                          Text('(${_nurse!.totalOrders} ${'order_count_suffix'.tr})', style: TextStyle(fontSize: 12.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
                                         ],
                                       ),
                                     ],
@@ -102,7 +102,7 @@ class _NurseCertificatesScreenState extends State<NurseCertificatesScreen> {
 
                           SizedBox(height: 24.h),
 
-                          Text('Sertifikatlar', style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w800, color: AppColors.textDark, fontFamily: 'Nunito')),
+                          Text('certificates'.tr, style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w800, color: AppColors.textDark, fontFamily: 'Nunito')),
                           SizedBox(height: 12.h),
 
                           if (_nurse!.certificateItems.isEmpty)
@@ -114,7 +114,7 @@ class _NurseCertificatesScreenState extends State<NurseCertificatesScreen> {
                                 children: [
                                   Icon(Icons.folder_open_rounded, color: AppColors.textLight, size: 40.sp),
                                   SizedBox(height: 10.h),
-                                  Text('Sertifikatlar yuklanmagan', style: TextStyle(fontSize: 14.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
+                                  Text('no_certificates'.tr, style: TextStyle(fontSize: 14.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
                                 ],
                               ),
                             )
@@ -202,7 +202,7 @@ class _PdfTile extends StatelessWidget {
           try {
             await launchUrl(Uri.parse(item.url), mode: LaunchMode.inAppWebView);
           } catch (e) {
-            Get.snackbar('Xato', 'Faylni ochib bo\'lmadi',
+            Get.snackbar('err_title'.tr, 'err_file_open'.tr,
               backgroundColor: Colors.red.withOpacity(0.9),
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,

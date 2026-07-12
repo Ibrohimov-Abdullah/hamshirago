@@ -188,9 +188,10 @@ class PaymentScreen extends StatelessWidget {
                   icon: Icons.payments_outlined,
                   child: Column(
                     children: [
-
                       _buildPaymentTile(PaymentMethod.cash, 'cash'.tr, '💵',
-                          const Color(0xFFF59E0B), ctrl,
+                          const Color(0xFFF59E0B), ctrl),
+                      _buildPaymentTile(PaymentMethod.click, 'Click', '💳',
+                          const Color(0xFF0066CC), ctrl,
                           isLast: true),
                     ],
                   ),
@@ -198,34 +199,40 @@ class PaymentScreen extends StatelessWidget {
 
                 SizedBox(height: 14.h),
 
-                // Warning Banner
-                Container(
-                  padding: EdgeInsets.all(14.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF8E1),
-                    borderRadius: BorderRadius.circular(14.r),
-                    border: Border.all(
-                      color: const Color(0xFFEDC200).withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text('⚠️', style: TextStyle(fontSize: 16)),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Text(
-                          'payment_soon'.tr,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: AppColors.textMedium,
-                            fontFamily: 'Nunito',
-                            height: 1.4,
-                          ),
-                        ),
+                // Info banner — changes based on selected method
+                Obx(() {
+                  if (ctrl.paymentMethod.value == PaymentMethod.click) {
+                    return Container(
+                      padding: EdgeInsets.all(14.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F1FF),
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(color: const Color(0xFF0066CC).withOpacity(0.25)),
                       ),
-                    ],
-                  ),
-                ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('💳', style: TextStyle(fontSize: 16)),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Text(
+                              Get.locale?.languageCode == 'ru'
+                                  ? 'После создания заказа вы будете перенаправлены в Click для оплаты. Заказ будет виден сразу.'
+                                  : 'Buyurtma yaratilgandan so\'ng Click ilovasiga yo\'naltirilasiz. Buyurtma darhol ko\'rinadi.',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: const Color(0xFF0055AA),
+                                fontFamily: 'Nunito',
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
               ],
             ),
           ),

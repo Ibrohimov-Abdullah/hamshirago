@@ -39,6 +39,36 @@ class FirebaseService {
 
   Future<void> signOut() => _auth.signOut();
 
+  // ── ACCOUNT DELETION (Apple Guideline 5.1.1(v) requirement) ────────────────
+  Future<void> deleteAccount(String uid) async {
+    // 1. Delete user's Firestore document
+    try { await _users.doc(uid).delete(); } catch (_) {}
+
+    // 2. Delete user's orders (optional — anonymize instead if you want history)
+    try {
+      final orders = await _orders.where('clientId', isEqualTo: uid).get();
+      for (final doc in orders.docs) {
+        await doc.reference.delete();
+      }
+    } catch (_) {}
+
+    // 3. Delete user's complaints
+    try {
+      final complaints = await _complaints.where('clientId', isEqualTo: uid).get();
+      for (final doc in complaints.docs) {
+        await doc.reference.delete();
+      }
+    } catch (_) {}
+
+    // 4. Delete the Firebase Auth user (must be last)
+    try {
+      await _auth.currentUser?.delete();
+    } catch (_) {
+      // If auth deletion fails (e.g. needs re-authentication), just sign out
+      await _auth.signOut();
+    }
+  }
+
   // ── USERS ─────────────────────────────────────────────────────────────────
   Future<UserModel?> getUser(String uid) async {
     final doc = await _users.doc(uid).get();

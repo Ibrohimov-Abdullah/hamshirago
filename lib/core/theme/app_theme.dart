@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppColors {
-  static const Color primary      = Color(0xFF1EC8C8);
-  static const Color primaryLight = Color(0xFFE8FAFA);
-  static const Color primaryDark  = Color(0xFF0FA8A8);
-  static const Color accent       = Color(0xFFFF6B6B);
+  static const Color primary      = Color(0xFF4356D6);
+  static const Color primaryLight = Color(0xFFEDEFFB);
+  static const Color primaryDark  = Color(0xFF31429F);
+  static const Color accent       = Color(0xFFFF7A59);
   static const Color white        = Color(0xFFFFFFFF);
-  static const Color background   = Color(0xFFF7F9FC);
+  static const Color background   = Color(0xFFF5F6FB);
   static const Color cardBg       = Color(0xFFFFFFFF);
-  static const Color divider      = Color(0xFFEDF2F7);
-  static const Color textDark     = Color(0xFF1A202C);
-  static const Color textMedium   = Color(0xFF4A5568);
-  static const Color textLight    = Color(0xFFA0AEC0);
-  static const Color textHint     = Color(0xFFCBD5E0);
+  static const Color divider      = Color(0xFFEAECF5);
+  static const Color textDark     = Color(0xFF1B1E2E);
+  static const Color textMedium   = Color(0xFF4A4F66);
+  static const Color textLight    = Color(0xFF9CA1B8);
+  static const Color textHint     = Color(0xFFC7CADB);
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF1EC8C8), Color(0xFF0FA8A8)],
+    colors: [Color(0xFF4356D6), Color(0xFF31429F)],
     begin: Alignment.topLeft, end: Alignment.bottomRight,
   );
   static const LinearGradient headerGradient = LinearGradient(
-    colors: [Color(0xFF1EC8C8), Color(0xFF15A8B8)],
+    colors: [Color(0xFF4356D6), Color(0xFF5A4BD4)],
     begin: Alignment.topCenter, end: Alignment.bottomCenter,
   );
 }

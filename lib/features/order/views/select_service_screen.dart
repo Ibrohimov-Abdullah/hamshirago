@@ -50,8 +50,9 @@ class SelectServiceScreen extends StatelessWidget {
           Positioned(
             bottom: 0, left: 0, right: 0,
             child: Obx(() => _BottomBar(
+              servicesTotal: ctrl.servicesPrice,
               total: ctrl.totalPrice,
-              enabled: ctrl.totalPrice > 0,
+              enabled: ctrl.servicesPrice > 0,
               onNext: _showWarningDialog,
             )),
           ),
@@ -243,10 +244,16 @@ class _CountBtn extends StatelessWidget {
 
 // ── Bottom Bar ────────────────────────────────────────────────────────────────
 class _BottomBar extends StatelessWidget {
+  final int servicesTotal;
   final int total;
   final bool enabled;
   final VoidCallback onNext;
-  const _BottomBar({required this.total, required this.enabled, required this.onNext});
+  const _BottomBar({
+    required this.servicesTotal,
+    required this.total,
+    required this.enabled,
+    required this.onNext,
+  });
 
   String _fmt(int v) {
     final s = v.toString();
@@ -261,7 +268,7 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 11.h, 20.w, 32.h),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 32.h),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
@@ -270,17 +277,51 @@ class _BottomBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (enabled)
+          if (enabled) ...[
+            // Services subtotal
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('services_lbl'.tr, style: TextStyle(fontSize: 12.sp, color: AppColors.textMedium, fontFamily: 'Nunito')),
+                Text('${_fmt(servicesTotal)} so\'m', style: TextStyle(fontSize: 12.sp, color: AppColors.textMedium, fontFamily: 'Nunito')),
+              ],
+            ),
+            SizedBox(height: 5.h),
+            // Transport fee row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(children: [
+                  Icon(Icons.directions_car_rounded, color: AppColors.textLight, size: 13.sp),
+                  SizedBox(width: 4.w),
+                  Text('transport_fee_lbl'.tr, style: TextStyle(fontSize: 12.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
+                ]),
+                Text('15 000 so\'m', style: TextStyle(fontSize: 12.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
+              ],
+            ),
+            // Fee range note
             Padding(
-              padding: EdgeInsets.only(bottom: 9.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('total_lbl'.tr, style: TextStyle(fontSize: 13.sp, color: AppColors.textMedium, fontFamily: 'Nunito')),
-                  Text('${_fmt(total)} so\'m', style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w800, color: AppColors.primary, fontFamily: 'Nunito')),
-                ],
+              padding: EdgeInsets.only(top: 3.h, bottom: 6.h),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'transport_fee_note'.tr,
+                  style: TextStyle(fontSize: 9.5.sp, color: AppColors.textHint, fontFamily: 'Nunito'),
+                ),
               ),
             ),
+            Divider(height: 1, color: AppColors.divider),
+            SizedBox(height: 7.h),
+            // Grand total
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('total_lbl'.tr, style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Nunito')),
+                Text('${_fmt(total)} so\'m', style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w800, color: AppColors.primary, fontFamily: 'Nunito')),
+              ],
+            ),
+            SizedBox(height: 10.h),
+          ],
           GestureDetector(
             onTap: enabled ? onNext : null,
             child: AnimatedContainer(

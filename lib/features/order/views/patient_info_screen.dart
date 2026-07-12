@@ -82,36 +82,6 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
     setState(() { _scheduleMode = 1; _timeError = false; });
   }
 
-  void _pickMultiDayTime() async {
-    final time = await showTimePicker(
-      context: context,
-      initialTime: ctrl.multiDayTime ?? TimeOfDay.now(),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(primary: AppColors.primary),
-        ),
-        child: MediaQuery(
-          data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
-        ),
-      ),
-    );
-    if (time == null) return;
-    ctrl.multiDayTime = time;
-    setState(() => _timeError = false);
-  }
-
-  void _toggleMultiDay(DateTime date) {
-    final list = ctrl.multiDayDates;
-    final idx = list.indexWhere((d) => d.year == date.year && d.month == date.month && d.day == date.day);
-    if (idx >= 0) {
-      list.removeAt(idx);
-    } else {
-      list.add(date);
-    }
-    setState(() => _timeError = false);
-  }
-
   void _openMultiDayPicker() async {
     // Simple dialog with calendar-like date selection for next 30 days
     await showDialog(
