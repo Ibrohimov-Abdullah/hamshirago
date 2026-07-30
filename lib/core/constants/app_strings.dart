@@ -76,7 +76,6 @@ class AppTranslations extends Translations {
       'no_active_orders': "Faol buyurtmalar yo'q",
       'no_done_orders': "Bajarilgan buyurtmalar yo'q",
       'no_cancelled_orders': "Bekor qilingan buyurtmalar yo'q",
-      // select service
       'warning_before_order': 'Buyurtmani boshlashdan oldin quyidagilar tayyor ekanligiga ishonch hosil qiling',
       'item_prescription': 'Shifokor resepti',
       'item_medicine': 'Dori vositasi',
@@ -85,12 +84,10 @@ class AppTranslations extends Translations {
       'item_cotton': 'Paxta',
       'understood': 'Tushunarli',
       'total_lbl': 'Jami:',
-      // payment
       'order_details': 'Buyurtma tafsiloti',
       'payment_method_title': "To'lov usuli",
       'cash': 'Naqd pul',
       'payment_soon': "Payme va Click to'lov tez orada. Hozircha naqd pul tanlang.",
-      // patient info
       'patient_info_title': "Ma'lumotlarni kiriting",
       'patient_age': 'Bemor yoshi',
       'patient_gender': 'Bemor jinsi',
@@ -115,7 +112,6 @@ class AppTranslations extends Translations {
       'pick_time': 'Soat tanlang',
       'times_per_day': 'Kuniga necha marta',
       'time_slot_pick': '-vaqtni tanlang',
-      // tracking
       'searching_nurse': 'Hamshira qidirilmoqda...',
       'searching_desc': "Sizga yaqin bo'sh hamshira topilmoqda",
       'view_certificates': "Sertifikatlarni ko'rish",
@@ -136,7 +132,6 @@ class AppTranslations extends Translations {
       'step_completed': 'Bajarildi',
       'service_done_by': 'xizmat ko\'rsatdi',
       'service_success': 'Xizmat muvaffaqiyatli bajarildi',
-      // auth
       'login_subtitle': 'Telefon raqamingizni kiriting',
       'get_sms': 'SMS kod olish',
       'no_account': "Hisobingiz yo'qmi?",
@@ -146,7 +141,6 @@ class AppTranslations extends Translations {
       'have_account': 'Hisobingiz bormi?',
       'otp_title': 'SMS tasdiqlash',
       'code_sent': 'Kod yuborildi',
-      // location dialogs
       'loc_off_title': 'GPS yoqilmagan',
       'loc_off_body': 'Hamshira chaqirish uchun qurilmangizda GPS joylashuvni yoqing.',
       'loc_enable_gps': 'GPS yoqish',
@@ -157,15 +151,12 @@ class AppTranslations extends Translations {
       'loc_forever_body': 'Joylashuv ruxsati doimiy rad etilgan. Sozlamalardan ruxsat bering.',
       'loc_settings': 'Sozlamalar',
       'loc_later': 'Keyinroq',
-      // notifications
       'no_notifications': "Bildirishnomalar yo'q",
       'notifications_desc': 'Yangi buyurtma holati haqida bu yerda xabar olasiz',
-      // complaint extras
       'complaint_thanks': 'Fikringiz uchun rahmat. Xabaringiz adminga yuborildi.',
       'go_home': 'Bosh sahifaga',
       'complaint_error_title': 'Xato',
       'complaint_error_body': "Xabar bo'sh bo'lmasligi kerak",
-      // order screen (map page)
       'my_location_btn': "O'z manzilim",
       'other_location_btn': 'Boshqa manzil',
       'map_pick_hint': 'Qidiring yoki xaritaga bosib tanlang',
@@ -174,12 +165,27 @@ class AppTranslations extends Translations {
       'my_location_lbl': 'Mening joylashuvim',
       'picked_location_lbl': 'Tanlangan manzil',
       'location_not_found': 'Manzil topilmadi',
-      // home screen
       'phone_order_title': 'Telefon orqali buyurtma berish',
-      // select service / bottom bar
       'services_lbl': 'Xizmatlar',
       'transport_fee_lbl': "Yo'l haqqi",
       'transport_fee_note': "* 10 000 – 17 000 so'm orasida o'zgarishi mumkin",
+
+      // ═══ NEW KEYS for added features ═══
+      'health_tips': 'Sogʻlomlik maslahatlari',
+      'recent_visits': 'Soʻnggi tashriflar',
+      'view_all': 'Hammasini koʻrish',
+      'no_visits_yet': 'Hali tashriflar yoʻq',
+      'saved_nurses': 'Saqlangan hamshiradar',
+      'referral_program': 'Referal dasturi',
+      'referral_title': 'Ulashing va daromad qiling',
+      'referral_desc': 'Doʻstlaringizni taklif qiling va bonuslarga ega boʻling!',
+      'copied': 'Nusxa olindi!',
+      'share': 'Ulashish',
+      'no_saved_nurses': 'Siz hali hamshiralarni saqlamagansiz',
+      'saved_on': 'Saqlangan sana',
+      'today': 'Bugun',
+      'yesterday': 'Kecha',
+      'medical_history': 'Tibbiy tarix',
     },
     'ru': {
       'welcome': 'Добро пожаловать!', 'phone_number': 'Номер телефона',
@@ -254,7 +260,6 @@ class AppTranslations extends Translations {
       'no_active_orders': 'Нет активных заказов',
       'no_done_orders': 'Нет выполненных заказов',
       'no_cancelled_orders': 'Нет отменённых заказов',
-      // select service
       'warning_before_order': 'Убедитесь, что всё нижеперечисленное готово перед началом',
       'item_prescription': 'Рецепт врача',
       'item_medicine': 'Лекарство',
@@ -263,12 +268,10 @@ class AppTranslations extends Translations {
       'item_cotton': 'Вата',
       'understood': 'Понятно',
       'total_lbl': 'Итого:',
-      // payment
       'order_details': 'Детали заказа',
       'payment_method_title': 'Способ оплаты',
       'cash': 'Наличные',
       'payment_soon': 'Payme и Click скоро. Пока выберите наличные.',
-      // patient info
       'patient_info_title': 'Введите данные',
       'patient_age': 'Возраст пациента',
       'patient_gender': 'Пол пациента',
@@ -293,7 +296,6 @@ class AppTranslations extends Translations {
       'pick_time': 'Выберите время',
       'times_per_day': 'Сколько раз в день',
       'time_slot_pick': '-й раз выберите время',
-      // tracking
       'searching_nurse': 'Поиск медсестры...',
       'searching_desc': 'Ищем свободную медсестру рядом с вами',
       'view_certificates': 'Просмотреть сертификаты',
@@ -314,7 +316,6 @@ class AppTranslations extends Translations {
       'step_completed': 'Выполнено',
       'service_done_by': 'оказала услугу',
       'service_success': 'Услуга успешно выполнена',
-      // auth
       'login_subtitle': 'Введите ваш номер телефона',
       'get_sms': 'Получить SMS код',
       'no_account': 'Нет аккаунта?',
@@ -324,7 +325,6 @@ class AppTranslations extends Translations {
       'have_account': 'Есть аккаунт?',
       'otp_title': 'Подтверждение SMS',
       'code_sent': 'Код отправлен',
-      // location dialogs
       'loc_off_title': 'GPS отключён',
       'loc_off_body': 'Включите GPS на устройстве для вызова медсестры.',
       'loc_enable_gps': 'Включить GPS',
@@ -335,15 +335,12 @@ class AppTranslations extends Translations {
       'loc_forever_body': 'Разрешение на геолокацию отклонено навсегда. Откройте настройки.',
       'loc_settings': 'Настройки',
       'loc_later': 'Позже',
-      // notifications
       'no_notifications': 'Уведомлений нет',
       'notifications_desc': 'Здесь вы получите уведомления о статусе заказа',
-      // complaint extras
       'complaint_thanks': 'Спасибо за ваш отзыв. Мы учтём ваше мнение.',
       'go_home': 'На главную',
       'complaint_error_title': 'Ошибка',
       'complaint_error_body': 'Сообщение не должно быть пустым',
-      // order screen (map page)
       'my_location_btn': 'Моё местоположение',
       'other_location_btn': 'Другой адрес',
       'map_pick_hint': 'Поиск или нажмите на карту',
@@ -352,12 +349,27 @@ class AppTranslations extends Translations {
       'my_location_lbl': 'Моё местоположение',
       'picked_location_lbl': 'Выбранный адрес',
       'location_not_found': 'Адрес не найден',
-      // home screen
       'phone_order_title': 'Заказ по телефону',
-      // select service / bottom bar
       'services_lbl': 'Услуги',
       'transport_fee_lbl': 'Дорожный сбор',
       'transport_fee_note': '* Может варьироваться от 10 000 до 17 000 сум',
+
+      // ═══ NEW KEYS for added features ═══
+      'health_tips': 'Советы по здоровью',
+      'recent_visits': 'Недавние визиты',
+      'view_all': 'Посмотреть всё',
+      'no_visits_yet': 'Визитов пока нет',
+      'saved_nurses': 'Сохранённые медсёстры',
+      'referral_program': 'Реферальная программа',
+      'referral_title': 'Поделитесь и заработайте',
+      'referral_desc': 'Приглашайте друзей и получайте бонусы!',
+      'copied': 'Скопировано!',
+      'share': 'Поделиться',
+      'no_saved_nurses': 'Вы ещё не сохранили медсестёр',
+      'saved_on': 'Сохранено',
+      'today': 'Сегодня',
+      'yesterday': 'Вчера',
+      'medical_history': 'Медицинская история',
     },
   };
 }

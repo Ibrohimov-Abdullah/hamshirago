@@ -30,7 +30,7 @@ void main() async {
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   Get.put(AuthController());
   runApp(const MeningHamshiramApp());
-}
+} 
 
 class MeningHamshiramApp extends StatelessWidget {
   const MeningHamshiramApp({super.key});

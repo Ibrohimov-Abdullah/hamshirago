@@ -40,101 +40,264 @@ class _NurseCertificatesScreenState extends State<NurseCertificatesScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
+        elevation: 0,
         leading: GestureDetector(
           onTap: () => Get.back(),
           child: Container(
             margin: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10.r)),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
             child: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 17.sp),
           ),
         ),
-        title: Text('nurse_info_title'.tr, style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700, color: Colors.white, fontSize: 16.sp)),
+        title: Text(
+          'nurse_info_title'.tr,
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            fontSize: 17.sp,
+            letterSpacing: 0.3,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildShimmer()
           : _error != null
-              ? Center(child: Text('error_occurred'.tr, style: TextStyle(fontFamily: 'Nunito', fontSize: 15.sp, color: AppColors.textLight)))
-              : _nurse == null
-                  ? Center(child: Text('info_not_found'.tr, style: TextStyle(fontFamily: 'Nunito', fontSize: 15.sp, color: AppColors.textLight)))
-                  : SingleChildScrollView(
-                      padding: EdgeInsets.all(20.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Nurse profile card
-                          Container(
-                            padding: EdgeInsets.all(20.w),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(18.r),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4))],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 60.w,
-                                  height: 60.w,
-                                  decoration: BoxDecoration(gradient: AppColors.primaryGradient, shape: BoxShape.circle),
-                                  child: Icon(Icons.person_rounded, color: Colors.white, size: 30.sp),
-                                ),
-                                SizedBox(width: 16.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(_nurse!.fullName, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800, color: AppColors.textDark, fontFamily: 'Nunito')),
-                                      SizedBox(height: 4.h),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.star_rounded, color: const Color(0xFFF59E0B), size: 16.sp),
-                                          SizedBox(width: 4.w),
-                                          Text(_nurse!.rating.toStringAsFixed(1), style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textMedium, fontFamily: 'Nunito')),
-                                          SizedBox(width: 8.w),
-                                          Text('(${_nurse!.totalOrders} ${'order_count_suffix'.tr})', style: TextStyle(fontSize: 12.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+          ? _buildError()
+          : _nurse == null
+          ? _buildEmpty()
+          : _buildContent(),
+    );
+  }
 
-                          SizedBox(height: 24.h),
+  Widget _buildShimmer() => const Center(child: CircularProgressIndicator());
 
-                          Text('certificates'.tr, style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w800, color: AppColors.textDark, fontFamily: 'Nunito')),
-                          SizedBox(height: 12.h),
+  Widget _buildError() => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.error_outline_rounded, color: AppColors.textLight, size: 48.sp),
+        SizedBox(height: 12.h),
+        Text(
+          'error_occurred'.tr,
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 15.sp,
+            color: AppColors.textLight,
+          ),
+        ),
+      ],
+    ),
+  );
 
-                          if (_nurse!.certificateItems.isEmpty)
-                            Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.all(24.w),
-                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16.r)),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.folder_open_rounded, color: AppColors.textLight, size: 40.sp),
-                                  SizedBox(height: 10.h),
-                                  Text('no_certificates'.tr, style: TextStyle(fontSize: 14.sp, color: AppColors.textLight, fontFamily: 'Nunito')),
-                                ],
-                              ),
-                            )
-                          else
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: _nurse!.certificateItems.length,
-                              separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                              itemBuilder: (_, i) {
-                                final item = _nurse!.certificateItems[i];
-                                return item.isPdf
-                                    ? _PdfTile(item: item)
-                                    : _ImageTile(item: item);
-                              },
-                            ),
-                          SizedBox(height: 40.h),
-                        ],
+  Widget _buildEmpty() => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.person_off_rounded, color: AppColors.textLight, size: 48.sp),
+        SizedBox(height: 12.h),
+        Text(
+          'info_not_found'.tr,
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 15.sp,
+            color: AppColors.textLight,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildContent() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        children: [
+          // Profile Card - REDESIGNED
+          Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(24.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 68.w,
+                  height: 68.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _nurse!.fullName.isNotEmpty ? _nurse!.fullName[0].toUpperCase() : 'N',
+                      style: TextStyle(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        fontFamily: 'Nunito',
                       ),
                     ),
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _nurse!.fullName,
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          fontFamily: 'Nunito',
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.star_rounded, color: Colors.white, size: 14.sp),
+                            SizedBox(width: 4.w),
+                            Text(
+                              _nurse!.rating.toStringAsFixed(1),
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                fontFamily: 'Nunito',
+                              ),
+                            ),
+                            SizedBox(width: 6.w),
+                            Text(
+                              '(${_nurse!.totalOrders} ${'order_count_suffix'.tr})',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                color: Colors.white.withOpacity(0.7),
+                                fontFamily: 'Nunito',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 24.h),
+
+          // Certificates Header
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(Icons.folder_rounded, color: AppColors.primary, size: 18.sp),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'certificates'.tr,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                  fontFamily: 'Nunito',
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  '${_nurse!.certificateItems.length}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                    fontFamily: 'Nunito',
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 16.h),
+
+          if (_nurse!.certificateItems.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(32.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: AppColors.divider),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.folder_open_rounded, color: AppColors.textHint, size: 48.sp),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'no_certificates'.tr,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: AppColors.textLight,
+                      fontFamily: 'Nunito',
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 12.h,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: _nurse!.certificateItems.length,
+              itemBuilder: (_, i) {
+                final item = _nurse!.certificateItems[i];
+                return item.isPdf
+                    ? _PdfTile(item: item)
+                    : _ImageTile(item: item);
+              },
+            ),
+
+          SizedBox(height: 32.h),
+        ],
+      ),
     );
   }
 }
@@ -147,23 +310,84 @@ class _ImageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _openFullImage(item.url),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14.r),
-        child: Image.network(
-          item.url,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          loadingBuilder: (_, child, progress) => progress == null
-              ? child
-              : Container(
-                  height: 200.h,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16.r),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(
+                item.url,
+                fit: BoxFit.cover,
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : Container(
                   color: AppColors.background,
-                  child: const Center(child: CircularProgressIndicator()),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
-          errorBuilder: (_, __, ___) => Container(
-            height: 120.h,
-            decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(14.r)),
-            child: Center(child: Icon(Icons.broken_image_rounded, color: AppColors.textLight, size: 32.sp)),
+                errorBuilder: (_, __, ___) => Container(
+                  color: AppColors.background,
+                  child: Center(
+                    child: Icon(Icons.broken_image_rounded, color: AppColors.textHint, size: 32.sp),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                    ),
+                  ),
+                  child: Text(
+                    item.name.isNotEmpty ? item.name : 'Sertifikat',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      fontFamily: 'Nunito',
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8.w,
+                right: 8.w,
+                child: Container(
+                  padding: EdgeInsets.all(6.w),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.zoom_in_rounded,
+                    color: Colors.white,
+                    size: 14.sp,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -178,6 +402,8 @@ class _ImageTile extends StatelessWidget {
           color: Colors.black87,
           child: Center(
             child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 3.0,
               child: Image.network(url, fit: BoxFit.contain),
             ),
           ),
@@ -213,38 +439,69 @@ class _PdfTile extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: AppColors.divider),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 48.w,
-              height: 48.w,
+              width: 56.w,
+              height: 56.w,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFEEEE),
-                borderRadius: BorderRadius.circular(10.r),
+                color: const Color(0xFFFFF0F0),
+                borderRadius: BorderRadius.circular(14.r),
               ),
-              child: Icon(Icons.picture_as_pdf_rounded, color: const Color(0xFFE53E3E), size: 26.sp),
+              child: Icon(
+                Icons.picture_as_pdf_rounded,
+                color: const Color(0xFFDC2626),
+                size: 30.sp,
+              ),
             ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            SizedBox(height: 8.h),
+            Text(
+              item.name.isNotEmpty ? item.name : 'Sertifikat.pdf',
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+                fontFamily: 'Nunito',
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 4.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Icon(Icons.open_in_new_rounded, color: AppColors.primary, size: 10.sp),
+                  SizedBox(width: 4.w),
                   Text(
-                    item.name.isNotEmpty ? item.name : 'Sertifikat.pdf',
-                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textDark, fontFamily: 'Nunito'),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    'Open',
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Nunito',
+                    ),
                   ),
-                  SizedBox(height: 3.h),
-                  Text('Ko\'rish uchun bosing', style: TextStyle(fontSize: 11.sp, color: AppColors.primary, fontFamily: 'Nunito', fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
-            Icon(Icons.open_in_new_rounded, color: AppColors.primary, size: 18.sp),
           ],
         ),
       ),

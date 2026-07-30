@@ -15,9 +15,7 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
   final _ageScroll = ScrollController();
   static const _min = 18, _max = 100, _iw = 56.0;
 
-  // 0=now, 1=single, 2=multiDay
   int _scheduleMode = 0;
-
   bool _genderError = false;
   bool _timeError = false;
   bool _buildingError = false;
@@ -83,7 +81,6 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
   }
 
   void _openMultiDayPicker() async {
-    // Simple dialog with calendar-like date selection for next 30 days
     await showDialog(
       context: context,
       builder: (ctx) => _MultiDayPickerDialog(
@@ -101,7 +98,6 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
   bool _validate() {
     bool valid = true;
     setState(() {
-      // Gender is required
       if (ctrl.patientGender.value.isEmpty) {
         _genderError = true;
         valid = false;
@@ -109,7 +105,6 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
         _genderError = false;
       }
 
-      // Time: must pick either "now", single schedule, or multi-day with dates+all time slots filled
       final hasTime = ctrl.isNow.value
           || ctrl.scheduledAt != null
           || (ctrl.multiDayDates.isNotEmpty && ctrl.multiDayTimes.length == ctrl.timesPerDay && ctrl.multiDayTimes.every((t) => t.isNotEmpty));
@@ -120,7 +115,6 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
         _timeError = false;
       }
 
-      // Building number is required
       if (ctrl.buildingCtrl.text.trim().isEmpty) {
         _buildingError = true;
         valid = false;
@@ -128,7 +122,6 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
         _buildingError = false;
       }
 
-      // Apartment is required
       if (ctrl.apartmentCtrl.text.trim().isEmpty) {
         _apartmentError = true;
         valid = false;
@@ -147,22 +140,25 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
+        elevation: 0,
         title: Text(
           'patient_info_title'.tr,
           style: TextStyle(
             fontFamily: 'Nunito',
             fontWeight: FontWeight.w700,
             color: Colors.white,
-            fontSize: 16.sp,
+            fontSize: 17.sp,
+            letterSpacing: 0.3,
           ),
         ),
+        centerTitle: true,
         leading: GestureDetector(
           onTap: () => Get.back(),
           child: Container(
             margin: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(Icons.arrow_back_ios_rounded,
                 color: Colors.white, size: 17.sp),
@@ -172,148 +168,119 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 120.h),
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
             child: Column(
               children: [
-                // Age (not required — always has a value)
-                _card(Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _lbl('patient_age'.tr),
-                    SizedBox(height: 11.h),
-                    _buildAge(),
-                  ],
-                )),
-                SizedBox(height: 11.h),
-
-                // Gender — required
-                _card(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(children: [
-                        _lbl('patient_gender'.tr),
-                        SizedBox(width: 4.w),
-                        Text('*', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
-                        const Spacer(),
-                        if (_genderError)
-                          Text(
-                            'select_gender_err'.tr,
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 10.sp,
-                              fontFamily: 'Nunito',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                      ]),
-                      SizedBox(height: 11.h),
-                      Obx(() => Row(children: [
-                        _Sel(
-                          'male'.tr,
-                          Icons.male_rounded,
-                          ctrl.patientGender.value == 'male',
-                              () {
-                            ctrl.patientGender.value = 'male';
-                            setState(() => _genderError = false);
-                          },
-                          error: _genderError,
-                        ),
-                        SizedBox(width: 10.w),
-                        _Sel(
-                          'female'.tr,
-                          Icons.female_rounded,
-                          ctrl.patientGender.value == 'female',
-                              () {
-                            ctrl.patientGender.value = 'female';
-                            setState(() => _genderError = false);
-                          },
-                          error: _genderError,
-                        ),
-                      ])),
-                    ],
-                  ),
+                // Age - REDESIGNED
+                _modernCard(
+                  icon: Icons.cake_rounded,
+                  title: 'patient_age'.tr,
+                  child: _buildAge(),
                 ),
-                SizedBox(height: 11.h),
+                SizedBox(height: 12.h),
 
-                // Time — required
-                _card(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // Gender - REDESIGNED
+                _modernCard(
+                  icon: Icons.person_rounded,
+                  title: 'patient_gender'.tr,
+                  required: true,
+                  error: _genderError,
+                  errorText: 'select_gender_err'.tr,
+                  child: Obx(() => Row(
                     children: [
-                      Row(children: [
-                        _lbl('arrival_time'.tr),
-                        SizedBox(width: 4.w),
-                        Text('*', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
-                        const Spacer(),
-                        if (_timeError)
-                          Text(
-                            'select_time_err'.tr,
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 10.sp,
-                              fontFamily: 'Nunito',
-                              fontWeight: FontWeight.w600,
-                            ),
+                      _modernSelect(
+                        'male'.tr,
+                        Icons.male_rounded,
+                        ctrl.patientGender.value == 'male',
+                            () {
+                          ctrl.patientGender.value = 'male';
+                          setState(() => _genderError = false);
+                        },
+                      ),
+                      SizedBox(width: 12.w),
+                      _modernSelect(
+                        'female'.tr,
+                        Icons.female_rounded,
+                        ctrl.patientGender.value == 'female',
+                            () {
+                          ctrl.patientGender.value = 'female';
+                          setState(() => _genderError = false);
+                        },
+                      ),
+                    ],
+                  )),
+                ),
+                SizedBox(height: 12.h),
+
+                // Time - REDESIGNED
+                _modernCard(
+                  icon: Icons.schedule_rounded,
+                  title: 'arrival_time'.tr,
+                  required: true,
+                  error: _timeError,
+                  errorText: 'select_time_err'.tr,
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          _modernSelect(
+                            'now'.tr,
+                            Icons.flash_on_rounded,
+                            _scheduleMode == 0 && ctrl.isNow.value,
+                                () {
+                              ctrl.isNow.value = true;
+                              ctrl.scheduledAt = null;
+                              ctrl.multiDayDates.clear();
+                              ctrl.multiDayTimes.clear();
+                              setState(() { _scheduleMode = 0; _timeError = false; });
+                            },
                           ),
-                      ]),
-                      SizedBox(height: 11.h),
-                      // Row 1: Hozir + Vaqt belgilash
-                      Row(children: [
-                        _Sel(
-                          'now'.tr,
-                          Icons.flash_on_rounded,
-                          _scheduleMode == 0 && ctrl.isNow.value,
-                          () {
-                            ctrl.isNow.value = true;
-                            ctrl.scheduledAt = null;
-                            ctrl.multiDayDates.clear();
-                            ctrl.multiDayTimes.clear();
-                            setState(() { _scheduleMode = 0; _timeError = false; });
-                          },
-                          error: _timeError,
-                        ),
-                        SizedBox(width: 10.w),
-                        _Sel(
-                          'schedule_time'.tr,
-                          Icons.schedule_rounded,
-                          _scheduleMode == 1,
-                          () => _pickTime(),
-                          error: _timeError && _scheduleMode != 0,
-                        ),
-                      ]),
-                      SizedBox(height: 8.h),
-                      // Row 2: Ko'p kunlar — must be inside Row so Expanded has a bounded parent
-                      Row(children: [
-                        _Sel(
-                          'multi_days'.tr,
-                          Icons.date_range_rounded,
-                          _scheduleMode == 2,
-                          () => _openMultiDayPicker(),
-                          error: _timeError && _scheduleMode == 2,
-                        ),
-                      ]),
+                          SizedBox(width: 10.w),
+                          _modernSelect(
+                            'schedule_time'.tr,
+                            Icons.calendar_today_rounded,
+                            _scheduleMode == 1,
+                                () => _pickTime(),
+                          ),
+                          SizedBox(width: 10.w),
+                          _modernSelect(
+                            'multi_days'.tr,
+                            Icons.date_range_rounded,
+                            _scheduleMode == 2,
+                                () => _openMultiDayPicker(),
+                          ),
+                        ],
+                      ),
                       // Single date preview
                       if (_scheduleMode == 1 && ctrl.scheduledAt != null)
                         Padding(
-                          padding: EdgeInsets.only(top: 9.h),
+                          padding: EdgeInsets.only(top: 10.h),
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                             decoration: BoxDecoration(
                               color: AppColors.primaryLight,
-                              borderRadius: BorderRadius.circular(9.r),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
                             ),
-                            child: Row(children: [
-                              Icon(Icons.calendar_today_rounded, color: AppColors.primary, size: 13.sp),
-                              SizedBox(width: 7.w),
-                              Builder(builder: (_) {
-                                final dt = ctrl.scheduledAt!;
-                                return Text(
-                                  '${dt.day.toString().padLeft(2,'0')}.${dt.month.toString().padLeft(2,'0')}.${dt.year}  ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}',
-                                  style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AppColors.primary, fontFamily: 'Nunito'),
-                                );
-                              }),
-                            ]),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.access_time_rounded, color: AppColors.primary, size: 16.sp),
+                                SizedBox(width: 8.w),
+                                Builder(builder: (_) {
+                                  final dt = ctrl.scheduledAt!;
+                                  return Text(
+                                    '${dt.day.toString().padLeft(2,'0')}.${dt.month.toString().padLeft(2,'0')}.${dt.year}  ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}',
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                      fontFamily: 'Nunito',
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
                         ),
                       // Multi-day preview
@@ -323,86 +290,62 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                         final months = ['Yan','Feb','Mar','Apr','May','Iyn','Iyl','Avg','Sen','Okt','Noy','Dek'];
                         final sorted = [...dates]..sort((a, b) => a.compareTo(b));
                         return Padding(
-                          padding: EdgeInsets.only(top: 9.h),
+                          padding: EdgeInsets.only(top: 10.h),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Date chips
                               Wrap(
                                 spacing: 6.w, runSpacing: 6.h,
                                 children: sorted.map((d) => Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                                   decoration: BoxDecoration(
                                     color: AppColors.primaryLight,
-                                    borderRadius: BorderRadius.circular(8.r),
+                                    borderRadius: BorderRadius.circular(10.r),
                                     border: Border.all(color: AppColors.primary, width: 1),
                                   ),
                                   child: Text('${d.day} ${months[d.month - 1]}',
-                                    style: TextStyle(fontSize: 11.sp, color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Nunito')),
+                                      style: TextStyle(fontSize: 11.sp, color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Nunito')),
                                 )).toList(),
                               ),
                               SizedBox(height: 12.h),
-                              // Times per day stepper
                               Row(
                                 children: [
                                   Text('Kuniga necha marta:', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AppColors.textMedium, fontFamily: 'Nunito')),
                                   const Spacer(),
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (ctrl.timesPerDay > 1) {
-                                        setState(() {
-                                          ctrl.timesPerDay--;
-                                          while (ctrl.multiDayTimes.length > ctrl.timesPerDay) {
-                                            ctrl.multiDayTimes.removeLast();
-                                          }
-                                        });
-                                      }
-                                    },
-                                    child: Container(
-                                      width: 30.w, height: 30.h,
-                                      decoration: BoxDecoration(
-                                        color: ctrl.timesPerDay > 1 ? AppColors.primary : Colors.grey.shade300,
-                                        borderRadius: BorderRadius.circular(8.r),
-                                      ),
-                                      child: Icon(Icons.remove, color: Colors.white, size: 16.sp),
-                                    ),
-                                  ),
+                                  _counterBtn(Icons.remove_rounded, ctrl.timesPerDay > 1, () {
+                                    if (ctrl.timesPerDay > 1) {
+                                      setState(() {
+                                        ctrl.timesPerDay--;
+                                        while (ctrl.multiDayTimes.length > ctrl.timesPerDay) {
+                                          ctrl.multiDayTimes.removeLast();
+                                        }
+                                      });
+                                    }
+                                  }),
                                   Container(
-                                    width: 40.w, height: 30.h,
-                                    margin: EdgeInsets.symmetric(horizontal: 6.w),
+                                    width: 44.w, height: 32.h,
+                                    margin: EdgeInsets.symmetric(horizontal: 8.w),
                                     decoration: BoxDecoration(
                                       color: AppColors.primaryLight,
-                                      borderRadius: BorderRadius.circular(8.r),
+                                      borderRadius: BorderRadius.circular(10.r),
                                       border: Border.all(color: AppColors.primary),
                                     ),
                                     child: Center(
-                                      child: Text('${ctrl.timesPerDay}', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w800, color: AppColors.primary, fontFamily: 'Nunito')),
+                                      child: Text('${ctrl.timesPerDay}',
+                                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800, color: AppColors.primary, fontFamily: 'Nunito')),
                                     ),
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (ctrl.timesPerDay < 5) {
-                                        setState(() => ctrl.timesPerDay++);
-                                      }
-                                    },
-                                    child: Container(
-                                      width: 30.w, height: 30.h,
-                                      decoration: BoxDecoration(
-                                        color: ctrl.timesPerDay < 5 ? AppColors.primary : Colors.grey.shade300,
-                                        borderRadius: BorderRadius.circular(8.r),
-                                      ),
-                                      child: Icon(Icons.add, color: Colors.white, size: 16.sp),
-                                    ),
-                                  ),
+                                  _counterBtn(Icons.add_rounded, ctrl.timesPerDay < 5, () {
+                                    if (ctrl.timesPerDay < 5) setState(() => ctrl.timesPerDay++);
+                                  }),
                                 ],
                               ),
                               SizedBox(height: 10.h),
-                              // Time pickers for each slot
                               ...List.generate(ctrl.timesPerDay, (index) {
                                 final hasTime = index < ctrl.multiDayTimes.length;
                                 final timeStr = hasTime ? ctrl.multiDayTimes[index] : null;
                                 return Padding(
-                                  padding: EdgeInsets.only(bottom: 7.h),
+                                  padding: EdgeInsets.only(bottom: 8.h),
                                   child: GestureDetector(
                                     onTap: () async {
                                       TimeOfDay initial = TimeOfDay.now();
@@ -436,29 +379,31 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                       });
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                                       decoration: BoxDecoration(
                                         color: hasTime ? AppColors.primaryLight : AppColors.background,
-                                        borderRadius: BorderRadius.circular(9.r),
+                                        borderRadius: BorderRadius.circular(12.r),
                                         border: Border.all(
                                           color: hasTime ? AppColors.primary : Colors.grey.shade300,
+                                          width: hasTime ? 1.5 : 1,
                                         ),
                                       ),
                                       child: Row(
                                         children: [
                                           Container(
-                                            width: 22.w, height: 22.h,
+                                            width: 26.w, height: 26.w,
                                             decoration: BoxDecoration(
                                               color: hasTime ? AppColors.primary : Colors.grey.shade300,
-                                              borderRadius: BorderRadius.circular(6.r),
+                                              borderRadius: BorderRadius.circular(8.r),
                                             ),
                                             child: Center(
-                                              child: Text('${index + 1}', style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Nunito')),
+                                              child: Text('${index + 1}',
+                                                  style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w800, color: Colors.white, fontFamily: 'Nunito')),
                                             ),
                                           ),
+                                          SizedBox(width: 10.w),
+                                          Icon(Icons.access_time_rounded, color: hasTime ? AppColors.primary : AppColors.textLight, size: 16.sp),
                                           SizedBox(width: 8.w),
-                                          Icon(Icons.access_time_rounded, color: hasTime ? AppColors.primary : AppColors.textLight, size: 14.sp),
-                                          SizedBox(width: 6.w),
                                           Text(
                                             hasTime ? timeStr! : '${index + 1}-vaqtni tanlang',
                                             style: TextStyle(
@@ -469,7 +414,7 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                                             ),
                                           ),
                                           const Spacer(),
-                                          Icon(Icons.chevron_right_rounded, color: hasTime ? AppColors.primary : Colors.grey.shade400, size: 18.sp),
+                                          Icon(Icons.chevron_right_rounded, color: hasTime ? AppColors.primary : Colors.grey.shade400, size: 20.sp),
                                         ],
                                       ),
                                     ),
@@ -483,16 +428,15 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                     ],
                   ),
                 ),
-                SizedBox(height: 11.h),
+                SizedBox(height: 12.h),
 
-                // Address — building required, others optional
-                _card(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // Address - REDESIGNED
+                _modernCard(
+                  icon: Icons.home_rounded,
+                  title: 'address'.tr,
+                  child: Column(
                     children: [
-                      _lbl('address'.tr),
-                      SizedBox(height: 11.h),
-                      _fld(
+                      _modernField(
                         ctrl.buildingCtrl,
                         'building_num'.tr,
                         '14B',
@@ -503,33 +447,35 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                           if (_buildingError) setState(() => _buildingError = false);
                         },
                       ),
-                      SizedBox(height: 9.h),
-                      Row(children: [
-                        Expanded(
-                          child: _fld(
-                            ctrl.entranceCtrl,
-                            'entrance'.tr,
-                            '2',
-                            Icons.door_front_door_outlined,
+                      SizedBox(height: 10.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _modernField(
+                              ctrl.entranceCtrl,
+                              'entrance'.tr,
+                              '2',
+                              Icons.door_front_door_outlined,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: _fld(
-                            ctrl.apartmentCtrl,
-                            'apartment'.tr,
-                            '38',
-                            Icons.meeting_room_outlined,
-                            required: true,
-                            hasError: _apartmentError,
-                            onChanged: (_) {
-                              if (_apartmentError) setState(() => _apartmentError = false);
-                            },
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: _modernField(
+                              ctrl.apartmentCtrl,
+                              'apartment'.tr,
+                              '38',
+                              Icons.meeting_room_outlined,
+                              required: true,
+                              hasError: _apartmentError,
+                              onChanged: (_) {
+                                if (_apartmentError) setState(() => _apartmentError = false);
+                              },
+                            ),
                           ),
-                        ),
-                      ]),
-                      SizedBox(height: 9.h),
-                      _fld(
+                        ],
+                      ),
+                      SizedBox(height: 10.h),
+                      _modernField(
                         ctrl.commentCtrl,
                         'comment_lbl'.tr,
                         'comment_hint'.tr,
@@ -543,22 +489,21 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
             ),
           ),
 
-          // Bottom button
+          // Bottom Button - REDESIGNED
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(20.w, 11.h, 20.w, 32.h),
+              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 32.h),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius:
-                BorderRadius.vertical(top: Radius.circular(18.r)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.07),
-                    blurRadius: 12,
-                    offset: const Offset(0, -3),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
                   ),
                 ],
               ),
@@ -569,27 +514,35 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                   }
                 },
                 child: Container(
-                  height: 52.h,
+                  height: 56.h,
                   decoration: BoxDecoration(
                     gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(13.r),
+                    borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withOpacity(0.28),
-                        blurRadius: 14,
-                        offset: const Offset(0, 5),
+                        color: AppColors.primary.withOpacity(0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Center(
-                    child: Text(
-                      'next_btn'.tr,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        fontFamily: 'Nunito',
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'next_btn'.tr,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            fontFamily: 'Nunito',
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18.sp),
+                      ],
                     ),
                   ),
                 ),
@@ -601,11 +554,222 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
     );
   }
 
+  // ─── Modern Widgets ─────────────────────────────────────────────────────────
+
+  Widget _modernCard({
+    required IconData icon,
+    required String title,
+    required Widget child,
+    bool required = false,
+    bool error = false,
+    String errorText = '',
+  }) => Container(
+    padding: EdgeInsets.all(16.w),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18.r),
+      border: error ? Border.all(color: Colors.red, width: 1.5) : null,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.04),
+          blurRadius: 12,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(6.w),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 16.sp),
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+                color: error ? Colors.red : AppColors.textMedium,
+                fontFamily: 'Nunito',
+              ),
+            ),
+            if (required) ...[
+              SizedBox(width: 2.w),
+              Text('*', style: TextStyle(color: Colors.red, fontSize: 14.sp)),
+            ],
+            if (error && errorText.isNotEmpty) ...[
+              const Spacer(),
+              Text(
+                errorText,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 10.sp,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
+        SizedBox(height: 10.h),
+        child,
+      ],
+    ),
+  );
+
+  Widget _modernSelect(
+      String label,
+      IconData icon,
+      bool sel,
+      VoidCallback onTap,
+      ) => Expanded(
+    child: GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(vertical: 10.h),
+        decoration: BoxDecoration(
+          color: sel ? AppColors.primary : AppColors.background,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: sel ? AppColors.primary : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: sel ? [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ] : [],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: sel ? Colors.white : AppColors.textLight,
+              size: 16.sp,
+            ),
+            SizedBox(width: 5.w),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+                color: sel ? Colors.white : AppColors.textLight,
+                fontFamily: 'Nunito',
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Widget _modernField(
+      TextEditingController c,
+      String label,
+      String hint,
+      IconData icon, {
+        int maxLines = 1,
+        bool required = false,
+        bool hasError = false,
+        ValueChanged<String>? onChanged,
+      }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              color: hasError ? Colors.red : AppColors.textMedium,
+              fontFamily: 'Nunito',
+            ),
+          ),
+          if (required) ...[
+            SizedBox(width: 2.w),
+            Text('*', style: TextStyle(color: Colors.red, fontSize: 11.sp)),
+          ],
+          if (hasError) ...[
+            const Spacer(),
+            Text(
+              'required_field'.tr,
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 10.sp,
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
+      SizedBox(height: 4.h),
+      TextField(
+        controller: c,
+        maxLines: maxLines,
+        onChanged: onChanged,
+        style: TextStyle(
+          fontSize: 14.sp,
+          fontFamily: 'Nunito',
+          fontWeight: FontWeight.w600,
+          color: AppColors.textDark,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(
+            fontSize: 13.sp,
+            color: AppColors.textHint,
+            fontFamily: 'Nunito',
+          ),
+          prefixIcon: Icon(icon, color: hasError ? Colors.red : AppColors.primary, size: 18.sp),
+          contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(
+              color: hasError ? Colors.red : Colors.grey.shade200,
+              width: hasError ? 1.5 : 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide(
+              color: hasError ? Colors.red : AppColors.primary,
+              width: 1.5,
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+
+  Widget _counterBtn(IconData icon, bool active, VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 32.w, height: 32.w,
+      decoration: BoxDecoration(
+        color: active ? AppColors.primary : Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Icon(icon, color: Colors.white, size: 18.sp),
+    ),
+  );
+
   Widget _buildAge() {
     final double itemWidth = _iw;
-    // Account for page padding (20.w each side) + card padding (15.w each side)
     final double viewportCenter =
-        MediaQuery.of(context).size.width / 2 - 20.w - 15.w;
+        MediaQuery.of(context).size.width / 2 - 16.w - 16.w;
     final double paddingH = viewportCenter - itemWidth / 2;
 
     return SizedBox(
@@ -627,8 +791,7 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
           NotificationListener<ScrollNotification>(
             onNotification: (notification) {
               if (notification is ScrollEndNotification && !_isSnapping) {
-                final idx =
-                (_ageScroll.offset / itemWidth).round();
+                final idx = (_ageScroll.offset / itemWidth).round();
                 final clampedIdx = idx.clamp(0, _max - _min);
                 final targetOffset = clampedIdx * itemWidth;
 
@@ -675,12 +838,8 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
                         '$age',
                         style: TextStyle(
                           fontSize: sel ? 21.sp : 15.sp,
-                          fontWeight: sel
-                              ? FontWeight.w900
-                              : FontWeight.w500,
-                          color: sel
-                              ? AppColors.primary
-                              : AppColors.textLight,
+                          fontWeight: sel ? FontWeight.w900 : FontWeight.w500,
+                          color: sel ? AppColors.primary : AppColors.textLight,
                           fontFamily: 'Nunito',
                         ),
                       ),
@@ -708,113 +867,10 @@ class _PatientInfoScreenState extends State<PatientInfoScreen> {
       ),
     ),
   );
-
-  Widget _card(Widget child) => Container(
-    width: double.infinity,
-    padding: EdgeInsets.all(15.w),
-    decoration: BoxDecoration(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(16.r),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.04),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: child,
-  );
-
-  Widget _lbl(String t) => Text(
-    t,
-    style: TextStyle(
-      fontSize: 11.sp,
-      fontWeight: FontWeight.w700,
-      color: AppColors.textMedium,
-      fontFamily: 'Nunito',
-    ),
-  );
-
-  Widget _fld(
-      TextEditingController c,
-      String label,
-      String hint,
-      IconData icon, {
-        int maxLines = 1,
-        bool required = false,
-        bool hasError = false,
-        ValueChanged<String>? onChanged,
-      }) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
-                color: hasError ? Colors.red : AppColors.textMedium,
-                fontFamily: 'Nunito',
-              ),
-            ),
-            if (required) ...[
-              SizedBox(width: 2.w),
-              Text('*',
-                  style: TextStyle(color: Colors.red, fontSize: 12.sp)),
-            ],
-            if (hasError) ...[
-              const Spacer(),
-              Text(
-                'required_field'.tr,
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 10.sp,
-                  fontFamily: 'Nunito',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ]),
-          SizedBox(height: 4.h),
-          TextField(
-            controller: c,
-            maxLines: maxLines,
-            onChanged: onChanged,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontFamily: 'Nunito',
-              fontWeight: FontWeight.w600,
-              color: AppColors.textDark,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              prefixIcon:
-              Icon(icon, color: hasError ? Colors.red : AppColors.primary, size: 16.sp),
-              contentPadding:
-              EdgeInsets.symmetric(horizontal: 11.w, vertical: 11.h),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.r),
-                borderSide: BorderSide(
-                  color: hasError ? Colors.red : Colors.grey.shade200,
-                  width: hasError ? 1.5 : 1,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.r),
-                borderSide: BorderSide(
-                  color: hasError ? Colors.red : AppColors.primary,
-                  width: 1.5,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
 }
 
 // ─── Multi-Day Picker Dialog ─────────────────────────────────────────────────
+
 class _MultiDayPickerDialog extends StatefulWidget {
   final List<DateTime> selected;
   final ValueChanged<List<DateTime>> onConfirm;
@@ -849,38 +905,59 @@ class _MultiDayPickerDialogState extends State<_MultiDayPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final daysInMonth = DateTime(_viewMonth.year, _viewMonth.month + 1, 0).day;
-    final firstWeekday = _viewMonth.weekday; // 1=Mon
+    final firstWeekday = _viewMonth.weekday;
     final cells = (firstWeekday - 1) + daysInMonth;
     final rows = (cells / 7).ceil();
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
       child: Padding(
-        padding: EdgeInsets.all(18.w),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('pick_days_title'.tr, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w800, fontFamily: 'Nunito', color: AppColors.textDark)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.date_range_rounded, color: AppColors.primary, size: 20.sp),
+                SizedBox(width: 8.w),
+                Text('pick_days_title'.tr,
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800, fontFamily: 'Nunito', color: AppColors.textDark)),
+              ],
+            ),
             SizedBox(height: 12.h),
-            // Month nav
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
                   onTap: () => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month - 1, 1)),
-                  child: Icon(Icons.chevron_left_rounded, color: AppColors.primary),
+                  child: Container(
+                    padding: EdgeInsets.all(6.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.chevron_left_rounded, color: AppColors.primary, size: 18.sp),
+                  ),
                 ),
-                Text('${_monthNames[_viewMonth.month-1]} ${_viewMonth.year}', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, fontFamily: 'Nunito')),
+                Text('${_monthNames[_viewMonth.month-1]} ${_viewMonth.year}',
+                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, fontFamily: 'Nunito')),
                 GestureDetector(
                   onTap: () => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month + 1, 1)),
-                  child: Icon(Icons.chevron_right_rounded, color: AppColors.primary),
+                  child: Container(
+                    padding: EdgeInsets.all(6.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.chevron_right_rounded, color: AppColors.primary, size: 18.sp),
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 8.h),
-            // Weekday headers
-            Row(children: _weekDays.map((d) => Expanded(child: Center(child: Text(d, style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w700, color: AppColors.textLight, fontFamily: 'Nunito'))))).toList()),
+            Row(children: _weekDays.map((d) => Expanded(child: Center(child: Text(d,
+                style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w700, color: AppColors.textLight, fontFamily: 'Nunito'))))).toList()),
             SizedBox(height: 4.h),
-            // Calendar grid
             ...List.generate(rows, (row) => Row(
               children: List.generate(7, (col) {
                 final cellIdx = row * 7 + col;
@@ -901,8 +978,7 @@ class _MultiDayPickerDialogState extends State<_MultiDayPickerDialog> {
                         border: sel ? null : Border.all(color: past ? Colors.transparent : Colors.grey.shade200),
                       ),
                       child: Center(
-                        child: Text(
-                          '$dayNum',
+                        child: Text('$dayNum',
                           style: TextStyle(
                             fontSize: 11.sp,
                             fontWeight: sel ? FontWeight.w800 : FontWeight.w500,
@@ -918,99 +994,55 @@ class _MultiDayPickerDialogState extends State<_MultiDayPickerDialog> {
             )),
             SizedBox(height: 12.h),
             if (_sel.isNotEmpty)
-              Text('${_sel.length} ${'days_selected'.tr}', style: TextStyle(fontSize: 11.sp, color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Nunito')),
-            SizedBox(height: 10.h),
-            Row(children: [
-              Expanded(child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  height: 42.h,
-                  decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(10.r)),
-                  child: Center(child: Text('cancel'.tr, style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textLight, fontFamily: 'Nunito'))),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-              )),
-              SizedBox(width: 10.w),
-              Expanded(flex: 2, child: GestureDetector(
-                onTap: _sel.isEmpty ? null : () { Navigator.pop(context); widget.onConfirm(_sel); },
-                child: Container(
-                  height: 42.h,
-                  decoration: BoxDecoration(
-                    gradient: _sel.isEmpty ? null : AppColors.primaryGradient,
-                    color: _sel.isEmpty ? AppColors.divider : null,
-                    borderRadius: BorderRadius.circular(10.r),
+                child: Text('${_sel.length} ${'days_selected'.tr}',
+                    style: TextStyle(fontSize: 12.sp, color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Nunito')),
+              ),
+            SizedBox(height: 12.h),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: 44.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Center(child: Text('cancel'.tr,
+                          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: AppColors.textLight, fontFamily: 'Nunito'))),
+                    ),
                   ),
-                  child: Center(child: Text('confirm'.tr, style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: _sel.isEmpty ? AppColors.textLight : Colors.white, fontFamily: 'Nunito'))),
                 ),
-              )),
-            ]),
+                SizedBox(width: 10.w),
+                Expanded(
+                  flex: 2,
+                  child: GestureDetector(
+                    onTap: _sel.isEmpty ? null : () { Navigator.pop(context); widget.onConfirm(_sel); },
+                    child: Container(
+                      height: 44.h,
+                      decoration: BoxDecoration(
+                        gradient: _sel.isEmpty ? null : AppColors.primaryGradient,
+                        color: _sel.isEmpty ? AppColors.divider : null,
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Center(child: Text('confirm'.tr,
+                          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700,
+                              color: _sel.isEmpty ? AppColors.textLight : Colors.white, fontFamily: 'Nunito'))),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
-}
-
-class _Sel extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool sel;
-  final VoidCallback onTap;
-  final bool error;
-
-  const _Sel(this.label, this.icon, this.sel, this.onTap, {this.error = false});
-
-  @override
-  Widget build(BuildContext context) => Expanded(
-    child: GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 170),
-        padding: EdgeInsets.symmetric(vertical: 12.h),
-        decoration: BoxDecoration(
-          color: sel
-              ? AppColors.primaryLight
-              : error
-              ? Colors.red.withOpacity(0.05)
-              : AppColors.background,
-          borderRadius: BorderRadius.circular(11.r),
-          border: Border.all(
-            color: sel
-                ? AppColors.primary
-                : error
-                ? Colors.red
-                : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: sel
-                  ? AppColors.primary
-                  : error
-                  ? Colors.red
-                  : AppColors.textLight,
-              size: 16.sp,
-            ),
-            SizedBox(width: 5.w),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
-                color: sel
-                    ? AppColors.primary
-                    : error
-                    ? Colors.red
-                    : AppColors.textLight,
-                fontFamily: 'Nunito',
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
 }

@@ -12,7 +12,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/app_routes.dart';
 import '../controllers/order_controller.dart';
 
-// ── Simple model for Nominatim search results ─────────────────────────────────
 class _Place {
   final String title;
   final String subtitle;
@@ -27,14 +26,14 @@ class _Place {
   });
 
   factory _Place.fromJson(Map<String, dynamic> j) {
-    final full  = j['display_name'] as String? ?? '';
+    final full = j['display_name'] as String? ?? '';
     final parts = full.split(',');
-    final title    = parts.isNotEmpty ? parts.first.trim() : full;
+    final title = parts.isNotEmpty ? parts.first.trim() : full;
     final subtitle = parts.length > 1
         ? parts.skip(1).join(',').trim()
         : '';
     return _Place(
-      title:    title,
+      title: title,
       subtitle: subtitle,
       lat: double.tryParse(j['lat'] as String? ?? '') ?? 0,
       lng: double.tryParse(j['lon'] as String? ?? '') ?? 0,
@@ -55,14 +54,12 @@ class _OrderScreenState extends State<OrderScreen> {
 
   final OrderController ctrl = Get.find<OrderController>();
 
-  // Search
   final TextEditingController _searchCtrl = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
   List<_Place> _suggestions = [];
   Timer? _debounce;
   bool _showSuggestions = false;
 
-  // Address shown in bottom panel
   String _selectedAddress = '';
 
   @override
@@ -83,8 +80,6 @@ class _OrderScreenState extends State<OrderScreen> {
     _debounce?.cancel();
     super.dispose();
   }
-
-  // ── Location ─────────────────────────────────────────────────────────────
 
   Future<void> _fetchMyLocation() async {
     var pos = ctrl.clientPosition;
@@ -128,8 +123,6 @@ class _OrderScreenState extends State<OrderScreen> {
     _mapController.move(LatLng(pos.latitude, pos.longitude), 16.0);
   }
 
-  // ── Search via Nominatim (OpenStreetMap) — free, no API key ──────────────
-
   void _onSearchChanged(String v) {
     _debounce?.cancel();
     if (v.trim().isEmpty) {
@@ -142,23 +135,21 @@ class _OrderScreenState extends State<OrderScreen> {
   Future<void> _search(String query) async {
     try {
       final lang = Get.locale?.languageCode == 'ru' ? 'ru' : 'uz,ru,en';
-
       final q = query.toLowerCase().contains('andij')
           ? query
           : '$query, Andijon';
-
       const viewbox = '71.5,41.0,73.2,40.45';
 
       final uri = Uri.https(
         'nominatim.openstreetmap.org',
         '/search',
         {
-          'q':               q,
-          'format':          'json',
-          'countrycodes':    'uz',
-          'viewbox':         viewbox,
-          'bounded':         '1',
-          'limit':           '10',
+          'q': q,
+          'format': 'json',
+          'countrycodes': 'uz',
+          'viewbox': viewbox,
+          'bounded': '1',
+          'limit': '10',
           'accept-language': lang,
         },
       );
@@ -168,10 +159,10 @@ class _OrderScreenState extends State<OrderScreen> {
 
       if (!mounted) return;
       if (response.statusCode == 200) {
-        final list  = jsonDecode(response.body) as List<dynamic>;
+        final list = jsonDecode(response.body) as List<dynamic>;
         final items = list.map((e) => _Place.fromJson(e as Map<String, dynamic>)).toList();
         setState(() {
-          _suggestions     = items;
+          _suggestions = items;
           _showSuggestions = items.isNotEmpty;
         });
       }
@@ -193,8 +184,6 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
-  // ── Build ────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -203,22 +192,25 @@ class _OrderScreenState extends State<OrderScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.primary,
+          elevation: 0,
           title: Text(
             'make_order'.tr,
             style: TextStyle(
               fontFamily: 'Nunito',
               fontWeight: FontWeight.w700,
               color: Colors.white,
-              fontSize: 16.sp,
+              fontSize: 17.sp,
+              letterSpacing: 0.3,
             ),
           ),
+          centerTitle: true,
           leading: GestureDetector(
             onTap: () => Get.back(),
             child: Container(
               margin: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 17.sp),
             ),
@@ -226,17 +218,16 @@ class _OrderScreenState extends State<OrderScreen> {
         ),
         body: Column(
           children: [
-            // ── Map area ──────────────────────────────────────────
+            // Map Area
             Expanded(
-              flex: 5,
+              flex: 4,
               child: Stack(
                 children: [
-                  // flutter_map — pure Dart, OpenStreetMap tiles, works on all iOS versions
                   FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
                       initialCenter: LatLng(
-                        ctrl.clientPosition?.latitude  ?? 40.8147,
+                        ctrl.clientPosition?.latitude ?? 40.8147,
                         ctrl.clientPosition?.longitude ?? 72.3469,
                       ),
                       initialZoom: 15.0,
@@ -266,28 +257,25 @@ class _OrderScreenState extends State<OrderScreen> {
                     ],
                   ),
 
-                  // ── Static crosshair — pin tip at exact map center ────
                   Positioned.fill(
                     child: IgnorePointer(
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Shadow ellipse right at center (pin tip touches it)
                           Container(
-                            width: 14.w,
-                            height: 5.h,
+                            width: 16.w,
+                            height: 6.h,
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.22),
+                              color: Colors.black.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(4.r),
                             ),
                           ),
-                          // Icon: padding(bottom = icon size) → tip is at center
                           Center(
                             child: Padding(
-                              padding: EdgeInsets.only(bottom: 52.sp),
+                              padding: EdgeInsets.only(bottom: 56.sp),
                               child: Icon(
-                                Icons.location_on_rounded,
-                                size: 52.sp,
+                                Icons.place_rounded,
+                                size: 56.sp,
                                 color: AppColors.primary,
                               ),
                             ),
@@ -297,24 +285,23 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                   ),
 
-                  // ── Search field + suggestions ────────────────────────
+                  // Search Field
                   Positioned(
                     top: 12.h,
                     left: 12.w,
                     right: 12.w,
                     child: Column(
                       children: [
-                        // Search TextField
                         Container(
-                          height: 48.h,
+                          height: 52.h,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(14.r),
+                            borderRadius: BorderRadius.circular(16.r),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.12),
-                                blurRadius: 12,
-                                offset: const Offset(0, 3),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
@@ -323,37 +310,37 @@ class _OrderScreenState extends State<OrderScreen> {
                             focusNode: _searchFocus,
                             onChanged: _onSearchChanged,
                             style: TextStyle(
-                              fontSize: 13.sp,
+                              fontSize: 14.sp,
                               fontFamily: 'Nunito',
                               color: AppColors.textDark,
                             ),
                             decoration: InputDecoration(
                               hintText: 'search_address_hint'.tr,
                               hintStyle: TextStyle(
-                                fontSize: 13.sp,
+                                fontSize: 14.sp,
                                 color: AppColors.textHint,
                                 fontFamily: 'Nunito',
                               ),
                               prefixIcon: Icon(
                                 Icons.search_rounded,
                                 color: AppColors.primary,
-                                size: 20.sp,
+                                size: 22.sp,
                               ),
                               suffixIcon: _searchCtrl.text.isNotEmpty
                                   ? IconButton(
-                                      icon: Icon(
-                                        Icons.close_rounded,
-                                        color: AppColors.textLight,
-                                        size: 18.sp,
-                                      ),
-                                      onPressed: () {
-                                        _searchCtrl.clear();
-                                        setState(() {
-                                          _suggestions     = [];
-                                          _showSuggestions = false;
-                                        });
-                                      },
-                                    )
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: AppColors.textLight,
+                                  size: 18.sp,
+                                ),
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  setState(() {
+                                    _suggestions = [];
+                                    _showSuggestions = false;
+                                  });
+                                },
+                              )
                                   : null,
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(vertical: 14.h),
@@ -361,26 +348,25 @@ class _OrderScreenState extends State<OrderScreen> {
                           ),
                         ),
 
-                        // Suggestions dropdown
                         if (_showSuggestions) ...[
                           SizedBox(height: 6.h),
                           Container(
-                            constraints: BoxConstraints(maxHeight: 220.h),
+                            constraints: BoxConstraints(maxHeight: 200.h),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(14.r),
+                              borderRadius: BorderRadius.circular(16.r),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.12),
-                                  blurRadius: 12,
+                                  blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(14.r),
+                              borderRadius: BorderRadius.circular(16.r),
                               child: ListView.separated(
-                                padding: EdgeInsets.symmetric(vertical: 6.h),
+                                padding: EdgeInsets.symmetric(vertical: 4.h),
                                 shrinkWrap: true,
                                 itemCount: _suggestions.length,
                                 separatorBuilder: (_, __) => Divider(
@@ -396,14 +382,21 @@ class _OrderScreenState extends State<OrderScreen> {
                                     child: Padding(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 14.w,
-                                        vertical: 11.h,
+                                        vertical: 10.h,
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(
-                                            Icons.location_on_outlined,
-                                            color: AppColors.primary,
-                                            size: 18.sp,
+                                          Container(
+                                            padding: EdgeInsets.all(6.w),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primaryLight,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.location_on_rounded,
+                                              color: AppColors.primary,
+                                              size: 14.sp,
+                                            ),
                                           ),
                                           SizedBox(width: 10.w),
                                           Expanded(
@@ -433,6 +426,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                               ],
                                             ),
                                           ),
+                                          Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            color: AppColors.textHint,
+                                            size: 12.sp,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -446,30 +444,30 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                   ),
 
-                  // ── My location button ────────────────────────────────
+                  // My Location Button
                   Positioned(
                     right: 14.w,
                     bottom: 16.h,
                     child: GestureDetector(
                       onTap: _goToMyLocation,
                       child: Container(
-                        width: 46.w,
-                        height: 46.w,
+                        width: 50.w,
+                        height: 50.w,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.18),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: Icon(
                           Icons.my_location_rounded,
                           color: AppColors.primary,
-                          size: 22.sp,
+                          size: 24.sp,
                         ),
                       ),
                     ),
@@ -478,19 +476,26 @@ class _OrderScreenState extends State<OrderScreen> {
               ),
             ),
 
-            // ── Bottom panel ──────────────────────────────────────
+            // Bottom Panel - REDESIGNED
             Expanded(
-              flex: 6,
+              flex: 5,
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 20,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
                     Container(
                       margin: EdgeInsets.only(top: 12.h),
-                      width: 40.w,
+                      width: 48.w,
                       height: 5.h,
                       decoration: BoxDecoration(
                         color: AppColors.divider,
@@ -503,80 +508,116 @@ class _OrderScreenState extends State<OrderScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Selected address display
+                            // Location Display - REDESIGNED
                             Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 14.h,
-                              ),
+                              padding: EdgeInsets.all(16.w),
                               decoration: BoxDecoration(
-                                color: AppColors.background,
-                                borderRadius: BorderRadius.circular(14.r),
+                                gradient: LinearGradient(
+                                  colors: [AppColors.primaryLight, AppColors.primaryLight.withOpacity(0.5)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16.r),
+                                border: Border.all(color: AppColors.primary.withOpacity(0.15)),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.location_on_rounded,
-                                    color: AppColors.primary,
-                                    size: 20.sp,
+                                  Container(
+                                    padding: EdgeInsets.all(8.w),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.location_on_rounded,
+                                      color: Colors.white,
+                                      size: 16.sp,
+                                    ),
                                   ),
-                                  SizedBox(width: 10.w),
+                                  SizedBox(width: 12.w),
                                   Expanded(
-                                    child: Text(
-                                      _selectedAddress.isEmpty
-                                          ? 'location'.tr
-                                          : _selectedAddress,
-                                      style: TextStyle(
-                                        fontSize: 13.sp,
-                                        color: AppColors.textMedium,
-                                        fontFamily: 'Nunito',
-                                      ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'selected_location'.tr,
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            color: AppColors.textLight,
+                                            fontFamily: 'Nunito',
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          _selectedAddress.isEmpty
+                                              ? 'location'.tr
+                                              : _selectedAddress,
+                                          style: TextStyle(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.textDark,
+                                            fontFamily: 'Nunito',
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    color: AppColors.textLight,
-                                    size: 14.sp,
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.primary,
+                                    size: 20.sp,
                                   ),
                                 ],
                               ),
                             ),
+
                             SizedBox(height: 24.h),
 
+                            // Service Selection - REDESIGNED
                             Text(
                               'service_type'.tr,
                               style: TextStyle(
-                                fontSize: 17.sp,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.textDark,
                                 fontFamily: 'Nunito',
                               ),
                             ),
-                            SizedBox(height: 14.h),
+                            SizedBox(height: 12.h),
 
                             GestureDetector(
                               onTap: () => Get.toNamed(AppRoutes.selectService),
                               child: Container(
-                                padding: EdgeInsets.all(18.w),
+                                padding: EdgeInsets.all(16.w),
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.primaryGradient,
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(18.r),
+                                  border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 1.5),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.primary.withOpacity(0.3),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 6),
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
                                 child: Row(
                                   children: [
                                     Container(
-                                      width: 52.w,
-                                      height: 52.w,
+                                      width: 56.w,
+                                      height: 56.w,
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.25),
+                                        gradient: AppColors.primaryGradient,
                                         borderRadius: BorderRadius.circular(14.r),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.primary.withOpacity(0.2),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
                                       ),
                                       child: Icon(
                                         Icons.medical_services_rounded,
@@ -594,32 +635,39 @@ class _OrderScreenState extends State<OrderScreen> {
                                             style: TextStyle(
                                               fontSize: 16.sp,
                                               fontWeight: FontWeight.w800,
-                                              color: Colors.white,
+                                              color: AppColors.textDark,
                                               fontFamily: 'Nunito',
                                             ),
                                           ),
-                                          SizedBox(height: 4.h),
                                           Text(
-                                            'select_service'.tr,
+                                            'tap_to_select'.tr,
                                             style: TextStyle(
-                                              fontSize: 12.5.sp,
-                                              color: Colors.white.withOpacity(0.85),
+                                              fontSize: 12.sp,
+                                              color: AppColors.textLight,
                                               fontFamily: 'Nunito',
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Icon(
-                                      Icons.arrow_forward_rounded,
-                                      color: Colors.white,
-                                      size: 22.sp,
+                                    Container(
+                                      padding: EdgeInsets.all(6.w),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryLight,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.arrow_forward_rounded,
+                                        color: AppColors.primary,
+                                        size: 16.sp,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                            SizedBox(height: 30.h),
+
+                            SizedBox(height: 20.h),
                           ],
                         ),
                       ),

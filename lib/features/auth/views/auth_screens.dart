@@ -48,7 +48,7 @@ class _PhoneField extends StatelessWidget {
               color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Text('🇺🇿', style: TextStyle(fontSize: 16.sp)),
+            child: Icon(Icons.phone_android_rounded, color: AppColors.primary, size: 18.sp),
           ),
         ),
       ),
@@ -114,42 +114,44 @@ class _PrimaryBtn extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
     onTap: isLoading ? null : onTap,
     child: AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      height: 54.h,
+      duration: const Duration(milliseconds: 300),
+      height: 56.h,
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: isLoading ? null : AppColors.primaryGradient,
         color: isLoading ? AppColors.divider : null,
-        borderRadius: BorderRadius.circular(15.r),
+        borderRadius: BorderRadius.circular(18.r),
         boxShadow: isLoading
             ? []
             : [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.35),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+        ],
       ),
       child: Center(
         child: isLoading
             ? SizedBox(
-                width: 22.w,
-                height: 22.w,
-                child: const CircularProgressIndicator(
-                  color: AppColors.primary,
-                  strokeWidth: 2.5,
-                ),
-              )
+          width: 24.w,
+          height: 24.w,
+          child: const CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 3,
+          ),
+        )
             : Text(
-                text,
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  fontFamily: 'Nunito',
-                ),
-              ),
+          text,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            fontFamily: 'Nunito',
+            letterSpacing: 0.5,
+          ),
+        ),
       ),
     ),
   );
@@ -175,14 +177,14 @@ Widget _header({required String title, required String subtitle}) => Container(
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
-              Icons.medical_services_rounded,
+              Icons.health_and_safety_rounded,
               color: Colors.white,
               size: 20.sp,
             ),
           ),
           SizedBox(width: 10.w),
           Text(
-            'Mening Hamshiram',
+            'HamshiraGo',
             style: TextStyle(
               fontSize: 22.sp,
               fontWeight: FontWeight.w800,
@@ -239,7 +241,7 @@ class LoginScreen extends StatelessWidget {
                   _PhoneField(controller: ctrl.phoneCtrl),
                   SizedBox(height: 26.h),
                   Obx(
-                    () => _PrimaryBtn(
+                        () => _PrimaryBtn(
                       text: 'get_sms'.tr,
                       isLoading: ctrl.isLoading.value,
                       onTap: () => ctrl.sendOtp(isRegister: false),
@@ -327,20 +329,20 @@ class RegisterScreen extends StatelessWidget {
               controller: ctrl.firstCtrl,
               label: 'first_name'.tr,
               hint: 'first_name_hint'.tr,
-              icon: Icons.person_outline_rounded,
+              icon: Icons.assignment_ind_rounded,
             ),
             SizedBox(height: 14.h),
             _LabeledField(
               controller: ctrl.lastCtrl,
               label: 'last_name'.tr,
               hint: 'last_name_hint'.tr,
-              icon: Icons.person_outline_rounded,
+              icon: Icons.assignment_ind_rounded,
             ),
             SizedBox(height: 14.h),
             _PhoneField(controller: ctrl.phoneCtrl),
             SizedBox(height: 28.h),
             Obx(
-              () => _PrimaryBtn(
+                  () => _PrimaryBtn(
                 text: 'get_sms'.tr,
                 isLoading: ctrl.isLoading.value,
                 onTap: () => ctrl.sendOtp(isRegister: true),
@@ -439,13 +441,13 @@ class OtpScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(Icons.sms_rounded, color: Colors.white, size: 34.sp),
+              child: Icon(Icons.verified_rounded, color: Colors.white, size: 34.sp),
             ),
             SizedBox(height: 22.h),
             Text('otp_title'.tr, style: AppTextStyles.h2),
             SizedBox(height: 8.h),
             Obx(
-              () => Text(
+                  () => Text(
                 "${'code_sent'.tr}: ${ctrl.phoneNumber.value}",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -476,32 +478,32 @@ class OtpScreen extends StatelessWidget {
             ),
             SizedBox(height: 24.h),
             Obx(
-              () => ctrl.resendSeconds.value > 0
+                  () => ctrl.resendSeconds.value > 0
                   ? Text(
-                      '${'resend'.tr}: ${ctrl.resendSeconds.value} s',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.textLight,
-                        fontFamily: 'Nunito',
-                      ),
-                    )
+                '${'resend'.tr}: ${ctrl.resendSeconds.value} s',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: AppColors.textLight,
+                  fontFamily: 'Nunito',
+                ),
+              )
                   : GestureDetector(
-                      onTap: () =>
-                          ctrl.sendOtp(isRegister: ctrl.isRegistering.value),
-                      child: Text(
-                        'resend'.tr,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Nunito',
-                        ),
-                      ),
-                    ),
+                onTap: () =>
+                    ctrl.sendOtp(isRegister: ctrl.isRegistering.value),
+                child: Text(
+                  'resend'.tr,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Nunito',
+                  ),
+                ),
+              ),
             ),
             const Spacer(),
             Obx(
-              () => _PrimaryBtn(
+                  () => _PrimaryBtn(
                 text: 'verify'.tr,
                 isLoading: ctrl.isLoading.value,
                 onTap: ctrl.verifyOtp,
