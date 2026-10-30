@@ -14,6 +14,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -26,6 +27,21 @@ from reel_gfx import (AMBER, BLACK, DIM, GREEN, H, INK, MED, RED, SEMI, TEAL, VI
                       radar_img, rrect, text_width)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def find_ffmpeg():
+    """System ffmpeg if installed, otherwise the binary bundled with `pip install imageio-ffmpeg`."""
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        sys.exit("ffmpeg not found: run `python3 -m pip install imageio-ffmpeg` (or `brew install ffmpeg`)")
+
+
+FFMPEG = find_ffmpeg()
 OUT = os.path.join(HERE, "out")
 FPS = 30
 
@@ -91,9 +107,11 @@ async def _tts(text, voice, rate, path):
 
 
 def probe_dur(path):
-    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
-                        "-of", "csv=p=0", path], capture_output=True, text=True)
-    return float(r.stdout.strip())
+    # decode fully and read the final timestamp; works with a bare ffmpeg (no ffprobe)
+    r = subprocess.run([FFMPEG, "-hide_banner", "-i", path, "-f", "null", "-"],
+                       capture_output=True, text=True)
+    h, m, s = re.findall(r"time=(\d+):(\d+):([\d.]+)", r.stderr)[-1]
+    return int(h) * 3600 + int(m) * 60 + float(s)
 
 
 def make_voice(voice):
@@ -525,7 +543,7 @@ MASTER = "loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.82:level=disabled"
 
 def mux(video, music, vo, tl, final):
     """Mix music (ducked under the voice, if any), master to -14 LUFS, mux with video."""
-    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", video, "-i", music]
+    cmd = [FFMPEG, "-y", "-loglevel", "error", "-i", video, "-i", music]
     if vo:
         parts, labels = [], []
         for i, (v, s) in enumerate(zip(vo, tl.segs)):
@@ -550,6 +568,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--voice", default="uz-UZ-SardorNeural")
     ap.add_argument("--no-voice", action="store_true")
+    ap.add_argument("--require-voice", action="store_true",
+                    help="fail instead of falling back to a music-only reel")
     ap.add_argument("--preview", action="store_true", help="write still frames only")
     args = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
@@ -560,6 +580,8 @@ def main():
             vo = make_voice(args.voice)
             print(f"voice: {args.voice} OK")
         except Exception as ex:  # network blocked, edge-tts missing, ...
+            if args.require_voice:
+                sys.exit(f"voice failed ({type(ex).__name__}: {ex}); check your internet connection")
             print(f"voice unavailable ({type(ex).__name__}: {ex}); building without voiceover",
                   file=sys.stderr)
     tl = Timeline(vo)
@@ -580,7 +602,7 @@ def main():
     nframes = int(math.ceil(tl.total * FPS))
     silent = os.path.join(OUT, "_video.mp4")
     enc = subprocess.Popen(
-        ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
+        [FFMPEG, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
          "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-preset", "slow",
          "-crf", "17", "-pix_fmt", "yuv420p", "-profile:v", "high", "-movflags", "+faststart",
          silent], stdin=subprocess.PIPE)
@@ -595,10 +617,11 @@ def main():
     music = os.path.join(OUT, "_music.wav")
     reel_audio.write_wav(music, reel_audio.build(tl.total, [s["start"] for s in tl.segs],
                                                  pops, dings))
-    final = os.path.join(OUT, "reel.mp4")
+    name = "reel_" + args.voice.split("-")[2].replace("Neural", "").lower() if vo else "reel"
+    final = os.path.join(OUT, name + ".mp4")
     mux(silent, music, vo, tl, final)
     # version with no audio at all, for adding Instagram audio / your own voice in-app
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", silent, "-c", "copy", "-an",
+    subprocess.run([FFMPEG, "-y", "-loglevel", "error", "-i", silent, "-c", "copy", "-an",
                     os.path.join(OUT, "reel_no_audio.mp4")], check=True)
     os.remove(silent)
     print("wrote", final)

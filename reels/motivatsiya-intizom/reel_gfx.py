@@ -1,6 +1,7 @@
 """Drawing helpers shared by the reel renderer and the cover generator."""
 import functools
 import math
+import os
 import random
 
 import numpy as np
@@ -8,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H = 1080, 1920
 
-FONT_DIR = "/usr/share/fonts/opentype/inter/"
+FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "")
 BLACK = FONT_DIR + "InterDisplay-Black.otf"
 XBOLD = FONT_DIR + "InterDisplay-ExtraBold.otf"
 BOLD = FONT_DIR + "InterDisplay-Bold.otf"
