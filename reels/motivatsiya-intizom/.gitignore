@@ -1,0 +1,5 @@
+out/_music.wav
+out/vo/
+out/render.log
+out/timeline.json
+__pycache__/
